@@ -6,13 +6,13 @@ A collection of modern C++20 sample applications demonstrating various video and
 
 - ✨ **Modern C++20** - Uses RAII wrappers, std::span, std::string_view, and structured bindings
 - 🛡️ **Exception Safety** - Automatic resource management with smart pointers
-- 📚 **Comprehensive** - 18 samples covering video and audio processing
+- 📚 **Comprehensive** - 22 samples covering video and audio processing
 - 🌍 **Bilingual Docs** - Complete documentation in English and Korean
 - 🎯 **Production Ready** - Proper error handling and resource management
 
 ## Overview
 
-This project contains eighteen sample applications that showcase different aspects of multimedia processing:
+This project contains twenty-two sample applications that showcase different aspects of multimedia processing:
 
 ### Video Samples
 1. **video_info** - Read and display video file metadata
@@ -24,17 +24,21 @@ This project contains eighteen sample applications that showcase different aspec
 7. **video_metadata** - Edit and manage video metadata tags
 8. **video_subtitles** - Extract and burn subtitles into videos
 9. **video_watermark** - Add image or text watermarks to videos
+10. **video_splitter** - Split videos into segments or merge multiple videos
+11. **video_slideshow** - Create slideshows from image collections
+12. **video_stabilization** - Stabilize shaky video footage
+13. **streaming_server** - Stream videos over network protocols
 
 ### Audio Samples
-10. **audio_info** - Read and display audio file metadata
-11. **audio_decoder** - Decode audio and save as WAV format
-12. **audio_encoder** - Generate audio tones and encode to various formats
-13. **audio_resampler** - Change audio sample rate and channel layout
-14. **audio_mixer** - Mix two audio files with volume control
-15. **audio_noise_reduction** - Apply noise reduction and audio enhancement
-16. **audio_format_converter** - Convert audio files between different formats
-17. **audio_spectrum** - Create audio spectrum visualizations
-18. **audio_equalizer** - Apply multi-band equalization
+14. **audio_info** - Read and display audio file metadata
+15. **audio_decoder** - Decode audio and save as WAV format
+16. **audio_encoder** - Generate audio tones and encode to various formats
+17. **audio_resampler** - Change audio sample rate and channel layout
+18. **audio_mixer** - Mix two audio files with volume control
+19. **audio_noise_reduction** - Apply noise reduction and audio enhancement
+20. **audio_format_converter** - Convert audio files between different formats
+21. **audio_spectrum** - Create audio spectrum visualizations
+22. **audio_equalizer** - Apply multi-band equalization
 
 ## Documentation
 
@@ -574,6 +578,198 @@ Apply multi-band equalization to audio files.
 - High-quality processing
 - WAV output format
 
+### 14. Video Splitter (video_splitter)
+
+Split videos into segments or merge multiple videos.
+
+```bash
+./video_splitter <command> [options]
+```
+
+**Commands:**
+
+**Split by Time** - Split at specific time ranges:
+```bash
+./video_splitter split_time video.mp4 segments 0,30 30,60 60,90
+```
+
+**Split by Duration** - Split into equal segments:
+```bash
+./video_splitter split_duration video.mp4 segments 60
+```
+
+**Merge Videos** - Combine multiple videos:
+```bash
+./video_splitter merge output.mp4 part1.mp4 part2.mp4 part3.mp4
+```
+
+**Examples:**
+```bash
+# Split video into 3 segments
+./video_splitter split_time video.mp4 parts 0,120 120,240 240,360
+
+# Split into 30-second segments
+./video_splitter split_duration long_video.mp4 clips 30
+
+# Merge multiple clips
+./video_splitter merge final.mp4 clip1.mp4 clip2.mp4 clip3.mp4
+```
+
+**Features:**
+- Precise time-based splitting
+- Duration-based automatic segmentation
+- Lossless segment extraction
+- Fast merging without re-encoding
+- Preserves video/audio quality
+
+### 15. Video Slideshow (video_slideshow)
+
+Create video slideshows from image collections.
+
+```bash
+./video_slideshow <output_video> <image_dir> [options]
+```
+
+**Options:**
+- `--width <pixels>` - Video width (default: 1920)
+- `--height <pixels>` - Video height (default: 1080)
+- `--fps <rate>` - Frame rate (default: 30)
+- `--duration <seconds>` - Duration per image (default: 3.0)
+- `--transition <type>` - Transition effect (default: fade)
+- `--trans-duration <sec>` - Transition duration (default: 1.0)
+
+**Transition Types:**
+- `none`, `fade`, `slide_left`, `slide_right`, `zoom_in`, `zoom_out`
+
+**Examples:**
+```bash
+# Basic slideshow
+./video_slideshow slideshow.mp4 photos/
+
+# Custom resolution and duration
+./video_slideshow output.mp4 images/ --width 1280 --height 720 --duration 5
+
+# With zoom-in transition at 60fps
+./video_slideshow video.mp4 pics/ --transition zoom_in --fps 60
+
+# Long duration with fade
+./video_slideshow memories.mp4 vacation/ --duration 10 --transition fade
+```
+
+**Features:**
+- Automatic image collection from directory
+- Multiple transition effects
+- Customizable resolution and frame rate
+- Variable image display duration
+- Supports JPG, PNG, BMP, TIFF formats
+
+### 16. Video Stabilization (video_stabilization)
+
+Stabilize shaky video footage using motion analysis.
+
+```bash
+./video_stabilization <input_video> <output_video> [options]
+```
+
+**Options:**
+- `--smoothing <value>` - Smoothing strength (1-100, default: 10)
+  * Higher values = smoother but less responsive
+- `--shakiness <value>` - Shakiness detection (1-10, default: 5)
+  * Higher values = detect more motion
+- `--stats` - Show stabilization statistics
+
+**Examples:**
+```bash
+# Basic stabilization
+./video_stabilization shaky.mp4 stable.mp4
+
+# High smoothing for very shaky footage
+./video_stabilization input.mp4 output.mp4 --smoothing 20 --shakiness 8
+
+# With statistics
+./video_stabilization video.mp4 stabilized.mp4 --smoothing 15 --stats
+```
+
+**Process:**
+1. **Motion Detection** - Analyzes camera movement
+2. **Transform Calculation** - Computes stabilization transforms
+3. **Video Stabilization** - Applies smooth camera motion
+
+**Features:**
+- Two-pass stabilization (detect + transform)
+- Configurable smoothing strength
+- Adjustable shakiness detection
+- Automatic crop and zoom
+- Preserves original video quality
+
+**Note:** Requires FFmpeg compiled with vidstab support.
+
+### 17. Streaming Server (streaming_server)
+
+Stream videos over network protocols.
+
+```bash
+./streaming_server <input_file> <output_url> [options]
+```
+
+**Options:**
+- `--format <fmt>` - Output format (auto-detect if not specified)
+- `--loop` - Loop the video continuously
+
+**Supported Formats:**
+- `flv` - Flash Video (for RTMP/HTTP)
+- `mpegts` - MPEG Transport Stream (for UDP/HTTP)
+- `hls` - HTTP Live Streaming
+- `dash` - MPEG-DASH
+
+**Examples:**
+
+**HTTP Streaming:**
+```bash
+./streaming_server video.mp4 http://localhost:8080/stream.flv --format flv
+```
+
+**RTMP Streaming** (requires RTMP server):
+```bash
+./streaming_server video.mp4 rtmp://localhost/live/stream --format flv
+```
+
+**UDP Streaming:**
+```bash
+./streaming_server video.mp4 udp://239.1.1.1:1234 --format mpegts
+```
+
+**HLS Output:**
+```bash
+./streaming_server video.mp4 stream.m3u8 --format hls
+```
+
+**Loop Streaming:**
+```bash
+./streaming_server video.mp4 http://localhost:8080/stream --loop
+```
+
+**Client Playback:**
+```bash
+# Using ffplay
+ffplay http://localhost:8080/stream.flv
+
+# Using VLC
+vlc http://localhost:8080/stream.flv
+```
+
+**Features:**
+- Multiple streaming protocols (RTMP, HTTP, UDP, HLS, DASH)
+- Real-time streaming with timing control
+- Loop mode for continuous playback
+- Auto-format detection
+- Network streaming optimization
+
+**Requirements:**
+- RTMP: Requires RTMP server (e.g., nginx-rtmp)
+- HTTP: Requires HTTP server accepting streams
+- UDP: Network must allow multicast
+
 ## Sample Workflows
 
 ### Video Processing Workflow
@@ -643,6 +839,10 @@ ffmpeg_samples/
 │   ├── video_metadata.cpp      # Metadata editor
 │   ├── video_subtitles.cpp     # Subtitle processor
 │   ├── video_watermark.cpp     # Watermark processor
+│   ├── video_splitter.cpp      # Video splitter/merger
+│   ├── video_slideshow.cpp     # Slideshow generator
+│   ├── video_stabilization.cpp # Video stabilization
+│   ├── streaming_server.cpp    # Streaming server
 │   ├── audio_info.cpp          # Audio information reader
 │   ├── audio_decoder.cpp       # Audio decoder
 │   ├── audio_encoder.cpp       # Audio encoder
@@ -771,21 +971,29 @@ This project is intended for educational purposes. FFmpeg itself is licensed und
 - **audio_spectrum** - Audio spectrum visualization
 - **audio_equalizer** - Multi-band equalizer
 
-### Phase 3 (Next)
+### Phase 3 ✅ (Completed)
 - **video_splitter** - Video splitting and merging
 - **video_slideshow** - Slideshow generator from images
 - **video_stabilization** - Video stabilization
 - **streaming_server** - Basic streaming server
 
+## Project Completion
+
+All planned samples have been successfully implemented! This project now provides:
+- **22 comprehensive samples** covering all major multimedia processing tasks
+- **Modern C++20** implementation with RAII and smart pointers
+- **Production-ready code** with proper error handling
+- **Complete documentation** in English and Korean
+
 ## Contributing
 
-Feel free to add more samples or improve existing ones. Common additions might include:
+Feel free to add more samples or improve existing ones. Potential additions might include:
 
-- Subtitle handling
-- Network streaming
-- Hardware acceleration examples
-- More complex filter combinations
-- Multi-threaded processing examples
+- Hardware acceleration examples (NVENC, VideoToolbox, VA-API)
+- More complex filter combinations and custom filters
+- Multi-threaded processing optimization
+- Additional streaming protocols
+- Advanced audio/video analysis tools
 
 ## Troubleshooting
 

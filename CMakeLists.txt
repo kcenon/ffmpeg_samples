@@ -59,6 +59,18 @@ target_link_libraries(video_subtitles ${FFMPEG_LIBRARIES})
 add_executable(video_watermark src/video_watermark.cpp)
 target_link_libraries(video_watermark ${FFMPEG_LIBRARIES})
 
+add_executable(video_splitter src/video_splitter.cpp)
+target_link_libraries(video_splitter ${FFMPEG_LIBRARIES})
+
+add_executable(video_slideshow src/video_slideshow.cpp)
+target_link_libraries(video_slideshow ${FFMPEG_LIBRARIES})
+
+add_executable(video_stabilization src/video_stabilization.cpp)
+target_link_libraries(video_stabilization ${FFMPEG_LIBRARIES})
+
+add_executable(streaming_server src/streaming_server.cpp)
+target_link_libraries(streaming_server ${FFMPEG_LIBRARIES})
+
 # Audio sample executables
 add_executable(audio_info src/audio_info.cpp)
 target_link_libraries(audio_info ${FFMPEG_LIBRARIES})
@@ -91,6 +103,7 @@ target_link_libraries(audio_equalizer ${FFMPEG_LIBRARIES})
 install(TARGETS
     video_info video_decoder video_encoder video_transcoder video_filter
     video_thumbnail video_metadata video_subtitles video_watermark
+    video_splitter video_slideshow video_stabilization streaming_server
     audio_info audio_decoder audio_encoder audio_resampler audio_mixer
     audio_noise_reduction audio_format_converter audio_spectrum audio_equalizer
     RUNTIME DESTINATION bin
