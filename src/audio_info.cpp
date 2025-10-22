@@ -2,158 +2,157 @@
  * Audio Information Reader
  *
  * This sample demonstrates how to read and display audio file information
- * using FFmpeg libraries.
+ * using modern C++20 and FFmpeg libraries.
  */
+
+#include "ffmpeg_wrappers.hpp"
 
 #include <iostream>
 #include <iomanip>
+#include <format>
+#include <span>
+#include <array>
 
-extern "C" {
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
-#include <libavutil/avutil.h>
-}
+namespace {
 
-void print_audio_stream_info(AVStream* stream, int index) {
-    AVCodecParameters* codecpar = stream->codecpar;
-    const AVCodec* codec = avcodec_find_decoder(codecpar->codec_id);
+void print_audio_stream_info(const AVStream& stream, int index) {
+    const auto* codecpar = stream.codecpar;
+    const auto* codec = avcodec_find_decoder(codecpar->codec_id);
 
-    std::cout << "Audio Stream #" << index << ":\n";
-    std::cout << "  Codec: " << (codec ? codec->long_name : "unknown") << " ("
-              << (codec ? codec->name : "unknown") << ")\n";
-    std::cout << "  Sample Rate: " << codecpar->sample_rate << " Hz\n";
-    std::cout << "  Channels: " << codecpar->ch_layout.nb_channels << "\n";
+    std::cout << std::format("Audio Stream #{}:\n", index);
+    std::cout << std::format("  Codec: {} ({})\n",
+                            codec ? codec->long_name : "unknown",
+                            codec ? codec->name : "unknown");
+    std::cout << std::format("  Sample Rate: {} Hz\n", codecpar->sample_rate);
+    std::cout << std::format("  Channels: {}\n", codecpar->ch_layout.nb_channels);
 
     // Channel layout
-    char ch_layout_str[64];
-    av_channel_layout_describe(&codecpar->ch_layout, ch_layout_str, sizeof(ch_layout_str));
-    std::cout << "  Channel Layout: " << ch_layout_str << "\n";
+    std::array<char, 64> ch_layout_str{};
+    av_channel_layout_describe(&codecpar->ch_layout, ch_layout_str.data(), ch_layout_str.size());
+    std::cout << std::format("  Channel Layout: {}\n", ch_layout_str.data());
 
     // Sample format
-    const char* sample_fmt_name = av_get_sample_fmt_name(static_cast<AVSampleFormat>(codecpar->format));
-    std::cout << "  Sample Format: " << (sample_fmt_name ? sample_fmt_name : "unknown") << "\n";
+    if (const auto* sample_fmt_name = av_get_sample_fmt_name(
+            static_cast<AVSampleFormat>(codecpar->format))) {
+        std::cout << std::format("  Sample Format: {}\n", sample_fmt_name);
+    }
 
     // Bit rate
     if (codecpar->bit_rate > 0) {
-        std::cout << "  Bit Rate: " << codecpar->bit_rate / 1000 << " kbps\n";
+        std::cout << std::format("  Bit Rate: {} kbps\n", codecpar->bit_rate / 1000);
     }
 
     // Frame size
     if (codecpar->frame_size > 0) {
-        std::cout << "  Frame Size: " << codecpar->frame_size << " samples\n";
+        std::cout << std::format("  Frame Size: {} samples\n", codecpar->frame_size);
     }
 
     // Duration
-    if (stream->duration != AV_NOPTS_VALUE) {
-        double duration = stream->duration * av_q2d(stream->time_base);
-        int minutes = static_cast<int>(duration / 60);
-        int seconds = static_cast<int>(duration) % 60;
-        int milliseconds = static_cast<int>((duration - static_cast<int>(duration)) * 1000);
+    if (stream.duration != AV_NOPTS_VALUE) {
+        const auto duration = stream.duration * av_q2d(stream.time_base);
+        const auto minutes = static_cast<int>(duration / 60);
+        const auto seconds = static_cast<int>(duration) % 60;
+        const auto milliseconds = static_cast<int>((duration - static_cast<int>(duration)) * 1000);
 
-        std::cout << "  Duration: " << std::setfill('0')
-                  << std::setw(2) << minutes << ":"
-                  << std::setw(2) << seconds << "."
-                  << std::setw(3) << milliseconds << "\n";
+        std::cout << std::format("  Duration: {:02}:{:02}.{:03}\n",
+                                minutes, seconds, milliseconds);
     }
 
     std::cout << "\n";
 }
 
-int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <input_file>\n";
-        std::cerr << "Example: " << argv[0] << " audio.mp3\n";
-        return 1;
-    }
-
-    const char* input_filename = argv[1];
-    AVFormatContext* format_ctx = nullptr;
-
-    // Open input file
-    int ret = avformat_open_input(&format_ctx, input_filename, nullptr, nullptr);
-    if (ret < 0) {
-        char errbuf[AV_ERROR_MAX_STRING_SIZE];
-        av_strerror(ret, errbuf, AV_ERROR_MAX_STRING_SIZE);
-        std::cerr << "Error opening input file: " << errbuf << "\n";
-        return 1;
-    }
-
-    // Retrieve stream information
-    ret = avformat_find_stream_info(format_ctx, nullptr);
-    if (ret < 0) {
-        char errbuf[AV_ERROR_MAX_STRING_SIZE];
-        av_strerror(ret, errbuf, AV_ERROR_MAX_STRING_SIZE);
-        std::cerr << "Error finding stream info: " << errbuf << "\n";
-        avformat_close_input(&format_ctx);
-        return 1;
-    }
-
-    // Print file information
-    std::cout << "======================================\n";
-    std::cout << "Audio File Information\n";
-    std::cout << "======================================\n\n";
-
-    std::cout << "File: " << input_filename << "\n";
-    std::cout << "Format: " << format_ctx->iformat->long_name << "\n";
-
-    // Duration
-    if (format_ctx->duration != AV_NOPTS_VALUE) {
-        double duration = format_ctx->duration / static_cast<double>(AV_TIME_BASE);
-        int hours = static_cast<int>(duration / 3600);
-        int minutes = static_cast<int>((duration - hours * 3600) / 60);
-        int seconds = static_cast<int>(duration - hours * 3600 - minutes * 60);
-
-        std::cout << "Duration: " << std::setfill('0') << std::setw(2) << hours << ":"
-                  << std::setw(2) << minutes << ":" << std::setw(2) << seconds << "\n";
-    }
-
-    // Overall bitrate
-    if (format_ctx->bit_rate > 0) {
-        std::cout << "Overall Bit Rate: " << format_ctx->bit_rate / 1000 << " kbps\n";
-    }
-
-    std::cout << "Number of Streams: " << format_ctx->nb_streams << "\n\n";
-
-    // Count audio streams
-    int audio_stream_count = 0;
-    for (unsigned int i = 0; i < format_ctx->nb_streams; i++) {
-        if (format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
-            audio_stream_count++;
-        }
-    }
-
-    std::cout << "Audio Streams: " << audio_stream_count << "\n\n";
-
-    // Print information for each audio stream
-    std::cout << "======================================\n";
-    std::cout << "Stream Details\n";
-    std::cout << "======================================\n\n";
-
-    for (unsigned int i = 0; i < format_ctx->nb_streams; i++) {
-        if (format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
-            print_audio_stream_info(format_ctx->streams[i], i);
-        }
-    }
-
-    // Print metadata if available
-    AVDictionaryEntry* tag = nullptr;
-    bool has_metadata = false;
-
+void print_metadata(const AVDictionary* metadata) {
     std::cout << "======================================\n";
     std::cout << "Metadata\n";
     std::cout << "======================================\n";
 
-    while ((tag = av_dict_get(format_ctx->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
-        std::cout << tag->key << ": " << tag->value << "\n";
+    AVDictionaryEntry* tag = nullptr;
+    bool has_metadata = false;
+
+    while ((tag = av_dict_get(metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+        std::cout << std::format("{}: {}\n", tag->key, tag->value);
         has_metadata = true;
     }
 
     if (!has_metadata) {
         std::cout << "No metadata available\n";
     }
+}
 
-    // Cleanup
-    avformat_close_input(&format_ctx);
+void print_format_info(const AVFormatContext& ctx, std::string_view filename) {
+    std::cout << "======================================\n";
+    std::cout << "Audio File Information\n";
+    std::cout << "======================================\n\n";
+
+    std::cout << std::format("File: {}\n", filename);
+    std::cout << std::format("Format: {}\n", ctx.iformat->long_name);
+
+    if (ctx.duration != AV_NOPTS_VALUE) {
+        const auto duration = ctx.duration / static_cast<double>(AV_TIME_BASE);
+        const auto hours = static_cast<int>(duration / 3600);
+        const auto minutes = static_cast<int>((duration - hours * 3600) / 60);
+        const auto seconds = static_cast<int>(duration - hours * 3600 - minutes * 60);
+
+        std::cout << std::format("Duration: {:02}:{:02}:{:02}\n", hours, minutes, seconds);
+    }
+
+    if (ctx.bit_rate > 0) {
+        std::cout << std::format("Overall Bit Rate: {} kbps\n", ctx.bit_rate / 1000);
+    }
+
+    std::cout << std::format("Number of Streams: {}\n\n", ctx.nb_streams);
+
+    // Count audio streams
+    const std::span streams{ctx.streams, ctx.nb_streams};
+    const auto audio_stream_count = std::ranges::count_if(streams,
+        [](const auto* stream) {
+            return stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO;
+        });
+
+    std::cout << std::format("Audio Streams: {}\n\n", audio_stream_count);
+
+    std::cout << "======================================\n";
+    std::cout << "Stream Details\n";
+    std::cout << "======================================\n\n";
+}
+
+} // anonymous namespace
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        std::cerr << std::format("Usage: {} <input_file>\n", argv[0]);
+        std::cerr << std::format("Example: {} audio.mp3\n", argv[0]);
+        return 1;
+    }
+
+    try {
+        const std::string_view input_filename{argv[1]};
+
+        // Open input file using RAII wrapper
+        auto format_ctx = ffmpeg::open_input_format(input_filename.data());
+
+        // Print file information
+        print_format_info(*format_ctx, input_filename);
+
+        // Print information for each audio stream
+        const std::span streams{format_ctx->streams, format_ctx->nb_streams};
+        for (int i = 0; const auto* stream : streams) {
+            if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
+                print_audio_stream_info(*stream, i);
+            }
+            ++i;
+        }
+
+        // Print metadata
+        print_metadata(format_ctx->metadata);
+
+    } catch (const ffmpeg::FFmpegError& e) {
+        std::cerr << std::format("FFmpeg error: {}\n", e.what());
+        return 1;
+    } catch (const std::exception& e) {
+        std::cerr << std::format("Error: {}\n", e.what());
+        return 1;
+    }
 
     return 0;
 }

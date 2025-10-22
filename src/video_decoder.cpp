@@ -2,214 +2,193 @@
  * Video Decoder
  *
  * This sample demonstrates how to decode video frames from a file
- * and save them as PPM images using FFmpeg libraries.
+ * and save them as PPM images using modern C++20 and FFmpeg libraries.
  */
+
+#include "ffmpeg_wrappers.hpp"
 
 #include <iostream>
 #include <fstream>
-#include <iomanip>
+#include <filesystem>
+#include <format>
+#include <ranges>
 
-extern "C" {
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
-#include <libavutil/avutil.h>
-#include <libavutil/imgutils.h>
-#include <libswscale/swscale.h>
-}
+namespace fs = std::filesystem;
 
-void save_frame_as_ppm(AVFrame* frame, int width, int height, int frame_number, const char* output_dir) {
-    std::string filename = std::string(output_dir) + "/frame_"
-                          + std::to_string(frame_number) + ".ppm";
+namespace {
+
+void save_frame_as_ppm(const AVFrame& frame, int width, int height,
+                       int frame_number, const fs::path& output_dir) {
+    const auto filename = output_dir / std::format("frame_{}.ppm", frame_number);
 
     std::ofstream file(filename, std::ios::binary);
-    if (!file.is_open()) {
-        std::cerr << "Error opening output file: " << filename << "\n";
-        return;
+    if (!file) {
+        throw std::runtime_error(std::format("Failed to open output file: {}", filename.string()));
     }
 
     // Write PPM header
-    file << "P6\n" << width << " " << height << "\n255\n";
+    file << std::format("P6\n{} {}\n255\n", width, height);
 
     // Write pixel data
-    for (int y = 0; y < height; y++) {
-        file.write(reinterpret_cast<char*>(frame->data[0] + y * frame->linesize[0]), width * 3);
+    for (int y = 0; y < height; ++y) {
+        file.write(reinterpret_cast<const char*>(frame.data[0] + y * frame.linesize[0]),
+                   width * 3);
     }
 
-    file.close();
-    std::cout << "Saved frame " << frame_number << " to " << filename << "\n";
+    std::cout << std::format("Saved frame {} to {}\n", frame_number, filename.string());
 }
 
-int main(int argc, char* argv[]) {
-    if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " <input_file> <output_dir> [max_frames]\n";
-        return 1;
+class VideoDecoder {
+public:
+    VideoDecoder(std::string_view input_file, const fs::path& output_dir, int max_frames)
+        : output_dir_(output_dir)
+        , max_frames_(max_frames)
+        , format_ctx_(ffmpeg::open_input_format(input_file.data()))
+        , packet_(ffmpeg::create_packet())
+        , frame_(ffmpeg::create_frame())
+        , frame_rgb_(ffmpeg::create_frame()) {
+
+        initialize();
     }
 
-    const char* input_filename = argv[1];
-    const char* output_dir = argv[2];
-    int max_frames = argc > 3 ? std::atoi(argv[3]) : 10;
+    void decode_and_save() {
+        std::cout << std::format("Decoding video from {}\n", format_ctx_->url);
+        std::cout << std::format("Resolution: {}x{}\n", codec_ctx_->width, codec_ctx_->height);
+        std::cout << std::format("Maximum frames to decode: {}\n\n", max_frames_);
 
-    AVFormatContext* format_ctx = nullptr;
-    AVCodecContext* codec_ctx = nullptr;
-    const AVCodec* codec = nullptr;
-    SwsContext* sws_ctx = nullptr;
-    AVPacket* packet = nullptr;
-    AVFrame* frame = nullptr;
-    AVFrame* frame_rgb = nullptr;
-    int video_stream_index = -1;
+        int frame_count = 0;
 
-    // Open input file
-    int ret = avformat_open_input(&format_ctx, input_filename, nullptr, nullptr);
-    if (ret < 0) {
-        char errbuf[AV_ERROR_MAX_STRING_SIZE];
-        av_strerror(ret, errbuf, AV_ERROR_MAX_STRING_SIZE);
-        std::cerr << "Error opening input file: " << errbuf << "\n";
-        return 1;
-    }
+        while (av_read_frame(format_ctx_.get(), packet_.get()) >= 0 && frame_count < max_frames_) {
+            ffmpeg::ScopedPacketUnref packet_guard(packet_.get());
 
-    // Retrieve stream information
-    if (avformat_find_stream_info(format_ctx, nullptr) < 0) {
-        std::cerr << "Error finding stream information\n";
-        avformat_close_input(&format_ctx);
-        return 1;
-    }
+            if (packet_->stream_index != video_stream_index_) {
+                continue;
+            }
 
-    // Find the first video stream
-    for (unsigned int i = 0; i < format_ctx->nb_streams; i++) {
-        if (format_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-            video_stream_index = i;
-            break;
-        }
-    }
-
-    if (video_stream_index == -1) {
-        std::cerr << "No video stream found\n";
-        avformat_close_input(&format_ctx);
-        return 1;
-    }
-
-    // Get codec parameters and find decoder
-    AVCodecParameters* codecpar = format_ctx->streams[video_stream_index]->codecpar;
-    codec = avcodec_find_decoder(codecpar->codec_id);
-    if (!codec) {
-        std::cerr << "Codec not found\n";
-        avformat_close_input(&format_ctx);
-        return 1;
-    }
-
-    // Allocate codec context
-    codec_ctx = avcodec_alloc_context3(codec);
-    if (!codec_ctx) {
-        std::cerr << "Failed to allocate codec context\n";
-        avformat_close_input(&format_ctx);
-        return 1;
-    }
-
-    // Copy codec parameters to context
-    if (avcodec_parameters_to_context(codec_ctx, codecpar) < 0) {
-        std::cerr << "Failed to copy codec parameters\n";
-        avcodec_free_context(&codec_ctx);
-        avformat_close_input(&format_ctx);
-        return 1;
-    }
-
-    // Open codec
-    if (avcodec_open2(codec_ctx, codec, nullptr) < 0) {
-        std::cerr << "Failed to open codec\n";
-        avcodec_free_context(&codec_ctx);
-        avformat_close_input(&format_ctx);
-        return 1;
-    }
-
-    // Allocate frames
-    frame = av_frame_alloc();
-    frame_rgb = av_frame_alloc();
-    if (!frame || !frame_rgb) {
-        std::cerr << "Failed to allocate frames\n";
-        av_frame_free(&frame);
-        av_frame_free(&frame_rgb);
-        avcodec_free_context(&codec_ctx);
-        avformat_close_input(&format_ctx);
-        return 1;
-    }
-
-    // Allocate buffer for RGB frame
-    int num_bytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, codec_ctx->width,
-                                              codec_ctx->height, 1);
-    uint8_t* buffer = static_cast<uint8_t*>(av_malloc(num_bytes * sizeof(uint8_t)));
-
-    av_image_fill_arrays(frame_rgb->data, frame_rgb->linesize, buffer, AV_PIX_FMT_RGB24,
-                        codec_ctx->width, codec_ctx->height, 1);
-
-    // Initialize SWS context for color conversion
-    sws_ctx = sws_getContext(codec_ctx->width, codec_ctx->height, codec_ctx->pix_fmt,
-                            codec_ctx->width, codec_ctx->height, AV_PIX_FMT_RGB24,
-                            SWS_BILINEAR, nullptr, nullptr, nullptr);
-
-    if (!sws_ctx) {
-        std::cerr << "Failed to initialize SWS context\n";
-        av_free(buffer);
-        av_frame_free(&frame);
-        av_frame_free(&frame_rgb);
-        avcodec_free_context(&codec_ctx);
-        avformat_close_input(&format_ctx);
-        return 1;
-    }
-
-    packet = av_packet_alloc();
-    int frame_count = 0;
-
-    std::cout << "Decoding video from " << input_filename << "\n";
-    std::cout << "Resolution: " << codec_ctx->width << "x" << codec_ctx->height << "\n";
-    std::cout << "Maximum frames to decode: " << max_frames << "\n\n";
-
-    // Read frames
-    while (av_read_frame(format_ctx, packet) >= 0 && frame_count < max_frames) {
-        if (packet->stream_index == video_stream_index) {
-            // Send packet to decoder
-            ret = avcodec_send_packet(codec_ctx, packet);
-            if (ret < 0) {
+            if (const auto ret = avcodec_send_packet(codec_ctx_.get(), packet_.get()); ret < 0) {
                 std::cerr << "Error sending packet to decoder\n";
                 break;
             }
 
-            // Receive decoded frames
-            while (ret >= 0) {
-                ret = avcodec_receive_frame(codec_ctx, frame);
+            while (true) {
+                const auto ret = avcodec_receive_frame(codec_ctx_.get(), frame_.get());
+
                 if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                    break;
-                } else if (ret < 0) {
-                    std::cerr << "Error during decoding\n";
                     break;
                 }
 
+                if (ret < 0) {
+                    std::cerr << "Error during decoding\n";
+                    return;
+                }
+
+                ffmpeg::ScopedFrameUnref frame_guard(frame_.get());
+
                 // Convert frame to RGB
-                sws_scale(sws_ctx, frame->data, frame->linesize, 0, codec_ctx->height,
-                         frame_rgb->data, frame_rgb->linesize);
+                sws_scale(sws_ctx_.get(),
+                         frame_->data, frame_->linesize, 0, codec_ctx_->height,
+                         frame_rgb_->data, frame_rgb_->linesize);
 
                 // Save frame
-                save_frame_as_ppm(frame_rgb, codec_ctx->width, codec_ctx->height,
-                                 frame_count, output_dir);
+                save_frame_as_ppm(*frame_rgb_, codec_ctx_->width, codec_ctx_->height,
+                                 frame_count, output_dir_);
 
-                frame_count++;
-                if (frame_count >= max_frames) {
+                if (++frame_count >= max_frames_) {
                     break;
                 }
             }
         }
-        av_packet_unref(packet);
+
+        std::cout << std::format("\nTotal frames decoded: {}\n", frame_count);
     }
 
-    std::cout << "\nTotal frames decoded: " << frame_count << "\n";
+private:
+    void initialize() {
+        // Find video stream
+        const auto stream_idx = ffmpeg::find_stream_index(format_ctx_.get(), AVMEDIA_TYPE_VIDEO);
+        if (!stream_idx) {
+            throw ffmpeg::FFmpegError("No video stream found");
+        }
+        video_stream_index_ = *stream_idx;
 
-    // Cleanup
-    av_packet_free(&packet);
-    av_free(buffer);
-    av_frame_free(&frame);
-    av_frame_free(&frame_rgb);
-    sws_freeContext(sws_ctx);
-    avcodec_free_context(&codec_ctx);
-    avformat_close_input(&format_ctx);
+        // Get codec
+        const auto* codecpar = format_ctx_->streams[video_stream_index_]->codecpar;
+        const auto* codec = avcodec_find_decoder(codecpar->codec_id);
+        if (!codec) {
+            throw ffmpeg::FFmpegError("Codec not found");
+        }
+
+        // Create and configure codec context
+        codec_ctx_ = ffmpeg::create_codec_context(codec);
+        ffmpeg::check_error(
+            avcodec_parameters_to_context(codec_ctx_.get(), codecpar),
+            "copy codec parameters"
+        );
+        ffmpeg::check_error(
+            avcodec_open2(codec_ctx_.get(), codec, nullptr),
+            "open codec"
+        );
+
+        // Allocate RGB frame buffer
+        frame_rgb_->format = AV_PIX_FMT_RGB24;
+        frame_rgb_->width = codec_ctx_->width;
+        frame_rgb_->height = codec_ctx_->height;
+
+        ffmpeg::check_error(
+            av_frame_get_buffer(frame_rgb_.get(), 0),
+            "allocate RGB frame buffer"
+        );
+
+        // Initialize scaler
+        sws_ctx_.reset(sws_getContext(
+            codec_ctx_->width, codec_ctx_->height, codec_ctx_->pix_fmt,
+            codec_ctx_->width, codec_ctx_->height, AV_PIX_FMT_RGB24,
+            SWS_BILINEAR, nullptr, nullptr, nullptr
+        ));
+
+        if (!sws_ctx_) {
+            throw ffmpeg::FFmpegError("Failed to initialize SWS context");
+        }
+    }
+
+    fs::path output_dir_;
+    int max_frames_;
+    int video_stream_index_ = -1;
+
+    ffmpeg::FormatContextPtr format_ctx_;
+    ffmpeg::CodecContextPtr codec_ctx_;
+    ffmpeg::PacketPtr packet_;
+    ffmpeg::FramePtr frame_;
+    ffmpeg::FramePtr frame_rgb_;
+    ffmpeg::SwsContextPtr sws_ctx_;
+};
+
+} // anonymous namespace
+
+int main(int argc, char* argv[]) {
+    if (argc < 3) {
+        std::cerr << std::format("Usage: {} <input_file> <output_dir> [max_frames]\n", argv[0]);
+        return 1;
+    }
+
+    try {
+        const std::string_view input_filename{argv[1]};
+        const fs::path output_dir{argv[2]};
+        const int max_frames = argc > 3 ? std::atoi(argv[3]) : 10;
+
+        // Create output directory if it doesn't exist
+        fs::create_directories(output_dir);
+
+        VideoDecoder decoder(input_filename, output_dir, max_frames);
+        decoder.decode_and_save();
+
+    } catch (const ffmpeg::FFmpegError& e) {
+        std::cerr << std::format("FFmpeg error: {}\n", e.what());
+        return 1;
+    } catch (const std::exception& e) {
+        std::cerr << std::format("Error: {}\n", e.what());
+        return 1;
+    }
 
     return 0;
 }
