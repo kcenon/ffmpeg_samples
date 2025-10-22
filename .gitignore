@@ -1,0 +1,66 @@
+# Build directories
+build/
+cmake-build-*/
+
+# Compiled binaries
+video_info
+video_decoder
+video_encoder
+video_transcoder
+video_filter
+
+# Object files
+*.o
+*.obj
+*.lo
+*.slo
+
+# Compiled libraries
+*.so
+*.so.*
+*.dylib
+*.dll
+*.a
+*.la
+*.lai
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+Makefile
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Sample videos and images (user-generated)
+samples/
+*.mp4
+*.avi
+*.mkv
+*.mov
+*.flv
+*.wmv
+*.ppm
+*.jpg
+*.png
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
