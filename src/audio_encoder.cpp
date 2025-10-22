@@ -2,31 +2,29 @@
  * Audio Encoder
  *
  * This sample demonstrates how to encode audio data (sine wave) into
- * various audio formats using FFmpeg libraries.
+ * various audio formats using modern C++20 and FFmpeg libraries.
  */
 
+#include "ffmpeg_wrappers.hpp"
+
 #include <iostream>
+#include <format>
+#include <string_view>
 #include <cmath>
+#include <numbers>
+#include <iomanip>
 
-extern "C" {
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
-#include <libavutil/avutil.h>
-#include <libavutil/opt.h>
-#include <libavutil/channel_layout.h>
-}
+namespace {
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
+constexpr auto PI = std::numbers::pi;
 
-void generate_sine_wave(AVFrame* frame, int frame_num, double frequency, int sample_rate) {
-    int16_t* samples = reinterpret_cast<int16_t*>(frame->data[0]);
-    double t = frame_num * frame->nb_samples / static_cast<double>(sample_rate);
+void generate_sine_wave(AVFrame& frame, int frame_num, double frequency, int sample_rate) {
+    auto* samples = reinterpret_cast<int16_t*>(frame.data[0]);
+    const auto t = frame_num * frame.nb_samples / static_cast<double>(sample_rate);
 
-    for (int i = 0; i < frame->nb_samples; i++) {
-        double sample_time = t + i / static_cast<double>(sample_rate);
-        int16_t sample = static_cast<int16_t>(sin(2.0 * M_PI * frequency * sample_time) * 10000.0);
+    for (int i = 0; i < frame.nb_samples; ++i) {
+        const auto sample_time = t + i / static_cast<double>(sample_rate);
+        const auto sample = static_cast<int16_t>(std::sin(2.0 * PI * frequency * sample_time) * 10000.0);
 
         // Stereo: same sample for both channels
         samples[2 * i] = sample;      // Left channel
@@ -34,292 +32,255 @@ void generate_sine_wave(AVFrame* frame, int frame_num, double frequency, int sam
     }
 }
 
+std::string_view select_codec(std::string_view filename) {
+    if (filename.find(".mp3") != std::string_view::npos) {
+        return "libmp3lame";
+    }
+    if (filename.find(".aac") != std::string_view::npos ||
+        filename.find(".m4a") != std::string_view::npos) {
+        return "aac";
+    }
+    if (filename.find(".ogg") != std::string_view::npos ||
+        filename.find(".oga") != std::string_view::npos) {
+        return "libvorbis";
+    }
+    if (filename.find(".flac") != std::string_view::npos) {
+        return "flac";
+    }
+    return "aac";  // Default
+}
+
+class AudioEncoder {
+public:
+    AudioEncoder(std::string_view output_file, double duration, double frequency)
+        : output_file_(output_file)
+        , duration_(duration)
+        , frequency_(frequency)
+        , packet_(ffmpeg::create_packet())
+        , frame_(ffmpeg::create_frame()) {
+
+        initialize();
+    }
+
+    void encode() {
+        std::cout << std::format("Encoding audio to {}\n", output_file_);
+        std::cout << std::format("Codec: {}\n", codec_->long_name);
+        std::cout << std::format("Sample Rate: {} Hz\n", codec_ctx_->sample_rate);
+        std::cout << "Channels: 2 (Stereo)\n";
+        std::cout << std::format("Bit Rate: {} kbps\n", codec_ctx_->bit_rate / 1000);
+        std::cout << std::format("Duration: {} seconds\n", duration_);
+        std::cout << std::format("Frequency: {} Hz\n\n", frequency_);
+
+        // Configure frame
+        frame_->format = AV_SAMPLE_FMT_S16;
+        frame_->ch_layout = codec_ctx_->ch_layout;
+        frame_->sample_rate = codec_ctx_->sample_rate;
+        frame_->nb_samples = codec_ctx_->frame_size > 0 ? codec_ctx_->frame_size : 1024;
+
+        ffmpeg::check_error(
+            av_frame_get_buffer(frame_.get(), 0),
+            "allocate frame buffer"
+        );
+
+        const auto total_samples = static_cast<int>(duration_ * codec_ctx_->sample_rate);
+        int frame_count = 0;
+        int64_t pts = 0;
+
+        // Encode frames
+        while (pts < total_samples) {
+            ffmpeg::check_error(
+                av_frame_make_writable(frame_.get()),
+                "make frame writable"
+            );
+
+            // Generate sine wave
+            generate_sine_wave(*frame_, frame_count, frequency_, codec_ctx_->sample_rate);
+            frame_->pts = pts;
+            pts += frame_->nb_samples;
+
+            // Encode frame
+            encode_frame();
+            ++frame_count;
+
+            if (frame_count % 10 == 0) {
+                const auto progress = (pts * 100.0) / total_samples;
+                std::cout << std::format("Encoding progress: {:.1f}%\r", progress) << std::flush;
+            }
+        }
+
+        std::cout << "\n";
+
+        // Flush encoder
+        flush_encoder();
+
+        // Write trailer
+        ffmpeg::check_error(
+            av_write_trailer(format_ctx_.get()),
+            "write trailer"
+        );
+
+        std::cout << std::format("Encoding completed successfully!\n");
+        std::cout << std::format("Total frames encoded: {}\n", frame_count);
+        std::cout << std::format("Output file: {}\n", output_file_);
+    }
+
+private:
+    void initialize() {
+        // Allocate output format context
+        AVFormatContext* raw_ctx = nullptr;
+        ffmpeg::check_error(
+            avformat_alloc_output_context2(&raw_ctx, nullptr, nullptr, output_file_.data()),
+            "allocate output context"
+        );
+        format_ctx_.reset(raw_ctx);
+
+        // Find encoder
+        const auto codec_name = select_codec(output_file_);
+        codec_ = avcodec_find_encoder_by_name(codec_name.data());
+
+        if (!codec_) {
+            std::cerr << std::format("Codec '{}' not found, trying default\n", codec_name);
+            codec_ = avcodec_find_encoder(format_ctx_->oformat->audio_codec);
+        }
+
+        if (!codec_) {
+            throw ffmpeg::FFmpegError("Audio codec not found");
+        }
+
+        // Create stream
+        stream_ = avformat_new_stream(format_ctx_.get(), nullptr);
+        if (!stream_) {
+            throw ffmpeg::FFmpegError("Failed to create stream");
+        }
+
+        // Create and configure codec context
+        codec_ctx_ = ffmpeg::create_codec_context(codec_);
+
+        codec_ctx_->codec_id = codec_->id;
+        codec_ctx_->codec_type = AVMEDIA_TYPE_AUDIO;
+        codec_ctx_->sample_rate = 44100;
+        codec_ctx_->ch_layout = AV_CHANNEL_LAYOUT_STEREO;
+        codec_ctx_->bit_rate = 128000;
+
+        // Select sample format
+        codec_ctx_->sample_fmt = codec_->sample_fmts ?
+                                 codec_->sample_fmts[0] : AV_SAMPLE_FMT_S16;
+
+        // Set time base
+        codec_ctx_->time_base = AVRational{1, codec_ctx_->sample_rate};
+
+        // Some formats require global headers
+        if (format_ctx_->oformat->flags & AVFMT_GLOBALHEADER) {
+            codec_ctx_->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+        }
+
+        // Open codec
+        ffmpeg::check_error(
+            avcodec_open2(codec_ctx_.get(), codec_, nullptr),
+            "open codec"
+        );
+
+        // Copy codec parameters to stream
+        ffmpeg::check_error(
+            avcodec_parameters_from_context(stream_->codecpar, codec_ctx_.get()),
+            "copy codec parameters"
+        );
+
+        stream_->time_base = codec_ctx_->time_base;
+
+        // Open output file
+        if (!(format_ctx_->oformat->flags & AVFMT_NOFILE)) {
+            ffmpeg::check_error(
+                avio_open(&format_ctx_->pb, output_file_.data(), AVIO_FLAG_WRITE),
+                "open output file"
+            );
+        }
+
+        // Write header
+        ffmpeg::check_error(
+            avformat_write_header(format_ctx_.get(), nullptr),
+            "write header"
+        );
+    }
+
+    void encode_frame() {
+        ffmpeg::check_error(
+            avcodec_send_frame(codec_ctx_.get(), frame_.get()),
+            "send frame"
+        );
+
+        receive_packets();
+    }
+
+    void flush_encoder() {
+        avcodec_send_frame(codec_ctx_.get(), nullptr);
+        receive_packets();
+    }
+
+    void receive_packets() {
+        while (true) {
+            const auto ret = avcodec_receive_packet(codec_ctx_.get(), packet_.get());
+
+            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+                break;
+            }
+
+            if (ret < 0) {
+                throw ffmpeg::FFmpegError(ret);
+            }
+
+            ffmpeg::ScopedPacketUnref packet_guard(packet_.get());
+
+            // Rescale packet timestamps
+            av_packet_rescale_ts(packet_.get(), codec_ctx_->time_base, stream_->time_base);
+            packet_->stream_index = stream_->index;
+
+            // Write packet to output file
+            ffmpeg::check_error(
+                av_interleaved_write_frame(format_ctx_.get(), packet_.get()),
+                "write frame"
+            );
+        }
+    }
+
+    std::string output_file_;
+    double duration_;
+    double frequency_;
+
+    ffmpeg::FormatContextPtr format_ctx_;
+    ffmpeg::CodecContextPtr codec_ctx_;
+    ffmpeg::PacketPtr packet_;
+    ffmpeg::FramePtr frame_;
+    const AVCodec* codec_ = nullptr;
+    AVStream* stream_ = nullptr;
+};
+
+} // anonymous namespace
+
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <output_file> [duration_seconds] [frequency_hz]\n";
-        std::cerr << "Example: " << argv[0] << " output.mp3 10 440\n";
+        std::cerr << std::format("Usage: {} <output_file> [duration_seconds] [frequency_hz]\n", argv[0]);
+        std::cerr << std::format("Example: {} output.mp3 10 440\n", argv[0]);
         std::cerr << "\nGenerates a sine wave tone.\n";
         std::cerr << "Default: 5 seconds, 440 Hz (A4 note)\n";
         return 1;
     }
 
-    const char* output_filename = argv[1];
-    double duration = argc > 2 ? std::atof(argv[2]) : 5.0;
-    double frequency = argc > 3 ? std::atof(argv[3]) : 440.0;
+    try {
+        const std::string_view output_filename{argv[1]};
+        const double duration = argc > 2 ? std::atof(argv[2]) : 5.0;
+        const double frequency = argc > 3 ? std::atof(argv[3]) : 440.0;
 
-    AVFormatContext* format_ctx = nullptr;
-    AVCodecContext* codec_ctx = nullptr;
-    const AVCodec* codec = nullptr;
-    AVStream* stream = nullptr;
-    AVFrame* frame = nullptr;
-    AVPacket* packet = nullptr;
-    int ret;
+        AudioEncoder encoder(output_filename, duration, frequency);
+        encoder.encode();
 
-    // Allocate output format context
-    avformat_alloc_output_context2(&format_ctx, nullptr, nullptr, output_filename);
-    if (!format_ctx) {
-        std::cerr << "Could not deduce output format from file extension\n";
+    } catch (const ffmpeg::FFmpegError& e) {
+        std::cerr << std::format("FFmpeg error: {}\n", e.what());
+        return 1;
+    } catch (const std::exception& e) {
+        std::cerr << std::format("Error: {}\n", e.what());
         return 1;
     }
-
-    // Find encoder (prefer AAC for MP4/M4A, MP3 for MP3)
-    const char* codec_name = nullptr;
-    if (strstr(output_filename, ".mp3")) {
-        codec_name = "libmp3lame";
-    } else if (strstr(output_filename, ".aac") || strstr(output_filename, ".m4a")) {
-        codec_name = "aac";
-    } else if (strstr(output_filename, ".ogg") || strstr(output_filename, ".oga")) {
-        codec_name = "libvorbis";
-    } else if (strstr(output_filename, ".flac")) {
-        codec_name = "flac";
-    } else {
-        codec_name = "aac";  // Default
-    }
-
-    codec = avcodec_find_encoder_by_name(codec_name);
-    if (!codec) {
-        std::cerr << "Codec '" << codec_name << "' not found, trying default\n";
-        codec = avcodec_find_encoder(format_ctx->oformat->audio_codec);
-    }
-
-    if (!codec) {
-        std::cerr << "Audio codec not found\n";
-        avformat_free_context(format_ctx);
-        return 1;
-    }
-
-    // Create new stream
-    stream = avformat_new_stream(format_ctx, nullptr);
-    if (!stream) {
-        std::cerr << "Failed to create stream\n";
-        avformat_free_context(format_ctx);
-        return 1;
-    }
-
-    // Allocate codec context
-    codec_ctx = avcodec_alloc_context3(codec);
-    if (!codec_ctx) {
-        std::cerr << "Failed to allocate codec context\n";
-        avformat_free_context(format_ctx);
-        return 1;
-    }
-
-    // Set codec parameters
-    codec_ctx->codec_id = codec->id;
-    codec_ctx->codec_type = AVMEDIA_TYPE_AUDIO;
-    codec_ctx->sample_rate = 44100;
-    codec_ctx->ch_layout = AV_CHANNEL_LAYOUT_STEREO;
-    codec_ctx->bit_rate = 128000;
-
-    // Select sample format
-    if (codec->sample_fmts) {
-        codec_ctx->sample_fmt = codec->sample_fmts[0];
-    } else {
-        codec_ctx->sample_fmt = AV_SAMPLE_FMT_S16;
-    }
-
-    // Set time base
-    codec_ctx->time_base = AVRational{1, codec_ctx->sample_rate};
-
-    // Some formats require global headers
-    if (format_ctx->oformat->flags & AVFMT_GLOBALHEADER) {
-        codec_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-    }
-
-    // Open codec
-    ret = avcodec_open2(codec_ctx, codec, nullptr);
-    if (ret < 0) {
-        char errbuf[AV_ERROR_MAX_STRING_SIZE];
-        av_strerror(ret, errbuf, AV_ERROR_MAX_STRING_SIZE);
-        std::cerr << "Failed to open codec: " << errbuf << "\n";
-        avcodec_free_context(&codec_ctx);
-        avformat_free_context(format_ctx);
-        return 1;
-    }
-
-    // Copy codec parameters to stream
-    ret = avcodec_parameters_from_context(stream->codecpar, codec_ctx);
-    if (ret < 0) {
-        std::cerr << "Failed to copy codec parameters\n";
-        avcodec_free_context(&codec_ctx);
-        avformat_free_context(format_ctx);
-        return 1;
-    }
-
-    stream->time_base = codec_ctx->time_base;
-
-    // Open output file
-    if (!(format_ctx->oformat->flags & AVFMT_NOFILE)) {
-        ret = avio_open(&format_ctx->pb, output_filename, AVIO_FLAG_WRITE);
-        if (ret < 0) {
-            char errbuf[AV_ERROR_MAX_STRING_SIZE];
-            av_strerror(ret, errbuf, AV_ERROR_MAX_STRING_SIZE);
-            std::cerr << "Failed to open output file: " << errbuf << "\n";
-            avcodec_free_context(&codec_ctx);
-            avformat_free_context(format_ctx);
-            return 1;
-        }
-    }
-
-    // Write file header
-    ret = avformat_write_header(format_ctx, nullptr);
-    if (ret < 0) {
-        char errbuf[AV_ERROR_MAX_STRING_SIZE];
-        av_strerror(ret, errbuf, AV_ERROR_MAX_STRING_SIZE);
-        std::cerr << "Error writing header: " << errbuf << "\n";
-        if (!(format_ctx->oformat->flags & AVFMT_NOFILE)) {
-            avio_closep(&format_ctx->pb);
-        }
-        avcodec_free_context(&codec_ctx);
-        avformat_free_context(format_ctx);
-        return 1;
-    }
-
-    // Allocate frame
-    frame = av_frame_alloc();
-    if (!frame) {
-        std::cerr << "Failed to allocate frame\n";
-        av_write_trailer(format_ctx);
-        if (!(format_ctx->oformat->flags & AVFMT_NOFILE)) {
-            avio_closep(&format_ctx->pb);
-        }
-        avcodec_free_context(&codec_ctx);
-        avformat_free_context(format_ctx);
-        return 1;
-    }
-
-    frame->format = AV_SAMPLE_FMT_S16;
-    frame->ch_layout = codec_ctx->ch_layout;
-    frame->sample_rate = codec_ctx->sample_rate;
-    frame->nb_samples = codec_ctx->frame_size > 0 ? codec_ctx->frame_size : 1024;
-
-    ret = av_frame_get_buffer(frame, 0);
-    if (ret < 0) {
-        std::cerr << "Failed to allocate frame buffer\n";
-        av_frame_free(&frame);
-        av_write_trailer(format_ctx);
-        if (!(format_ctx->oformat->flags & AVFMT_NOFILE)) {
-            avio_closep(&format_ctx->pb);
-        }
-        avcodec_free_context(&codec_ctx);
-        avformat_free_context(format_ctx);
-        return 1;
-    }
-
-    packet = av_packet_alloc();
-    if (!packet) {
-        std::cerr << "Failed to allocate packet\n";
-        av_frame_free(&frame);
-        av_write_trailer(format_ctx);
-        if (!(format_ctx->oformat->flags & AVFMT_NOFILE)) {
-            avio_closep(&format_ctx->pb);
-        }
-        avcodec_free_context(&codec_ctx);
-        avformat_free_context(format_ctx);
-        return 1;
-    }
-
-    std::cout << "Encoding audio to " << output_filename << "\n";
-    std::cout << "Codec: " << codec->long_name << "\n";
-    std::cout << "Sample Rate: " << codec_ctx->sample_rate << " Hz\n";
-    std::cout << "Channels: 2 (Stereo)\n";
-    std::cout << "Bit Rate: " << codec_ctx->bit_rate / 1000 << " kbps\n";
-    std::cout << "Duration: " << duration << " seconds\n";
-    std::cout << "Frequency: " << frequency << " Hz\n\n";
-
-    int total_samples = static_cast<int>(duration * codec_ctx->sample_rate);
-    int frame_count = 0;
-    int64_t pts = 0;
-
-    // Encode frames
-    while (pts < total_samples) {
-        ret = av_frame_make_writable(frame);
-        if (ret < 0) {
-            std::cerr << "Frame not writable\n";
-            break;
-        }
-
-        // Generate sine wave
-        generate_sine_wave(frame, frame_count, frequency, codec_ctx->sample_rate);
-        frame->pts = pts;
-        pts += frame->nb_samples;
-
-        // Send frame to encoder
-        ret = avcodec_send_frame(codec_ctx, frame);
-        if (ret < 0) {
-            char errbuf[AV_ERROR_MAX_STRING_SIZE];
-            av_strerror(ret, errbuf, AV_ERROR_MAX_STRING_SIZE);
-            std::cerr << "Error sending frame: " << errbuf << "\n";
-            break;
-        }
-
-        // Receive encoded packets
-        while (ret >= 0) {
-            ret = avcodec_receive_packet(codec_ctx, packet);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-                break;
-            } else if (ret < 0) {
-                std::cerr << "Error during encoding\n";
-                break;
-            }
-
-            // Rescale packet timestamps
-            av_packet_rescale_ts(packet, codec_ctx->time_base, stream->time_base);
-            packet->stream_index = stream->index;
-
-            // Write packet to output file
-            ret = av_interleaved_write_frame(format_ctx, packet);
-            av_packet_unref(packet);
-
-            if (ret < 0) {
-                char errbuf[AV_ERROR_MAX_STRING_SIZE];
-                av_strerror(ret, errbuf, AV_ERROR_MAX_STRING_SIZE);
-                std::cerr << "Error writing frame: " << errbuf << "\n";
-                break;
-            }
-        }
-
-        frame_count++;
-        if (frame_count % 10 == 0) {
-            double progress = (pts * 100.0) / total_samples;
-            std::cout << "Encoding progress: " << std::fixed << std::setprecision(1)
-                      << progress << "%\r" << std::flush;
-        }
-    }
-
-    std::cout << "\n";
-
-    // Flush encoder
-    avcodec_send_frame(codec_ctx, nullptr);
-    while (ret >= 0) {
-        ret = avcodec_receive_packet(codec_ctx, packet);
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-            break;
-        } else if (ret < 0) {
-            break;
-        }
-
-        av_packet_rescale_ts(packet, codec_ctx->time_base, stream->time_base);
-        packet->stream_index = stream->index;
-        av_interleaved_write_frame(format_ctx, packet);
-        av_packet_unref(packet);
-    }
-
-    // Write file trailer
-    av_write_trailer(format_ctx);
-
-    std::cout << "Encoding completed successfully!\n";
-    std::cout << "Total frames encoded: " << frame_count << "\n";
-    std::cout << "Output file: " << output_filename << "\n";
-
-    // Cleanup
-    av_packet_free(&packet);
-    av_frame_free(&frame);
-    avcodec_free_context(&codec_ctx);
-    if (!(format_ctx->oformat->flags & AVFMT_NOFILE)) {
-        avio_closep(&format_ctx->pb);
-    }
-    avformat_free_context(format_ctx);
 
     return 0;
 }
