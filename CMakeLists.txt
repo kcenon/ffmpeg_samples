@@ -47,6 +47,12 @@ target_link_libraries(video_transcoder ${FFMPEG_LIBRARIES})
 add_executable(video_filter src/video_filter.cpp)
 target_link_libraries(video_filter ${FFMPEG_LIBRARIES})
 
+add_executable(video_thumbnail src/video_thumbnail.cpp)
+target_link_libraries(video_thumbnail ${FFMPEG_LIBRARIES})
+
+add_executable(video_metadata src/video_metadata.cpp)
+target_link_libraries(video_metadata ${FFMPEG_LIBRARIES})
+
 # Audio sample executables
 add_executable(audio_info src/audio_info.cpp)
 target_link_libraries(audio_info ${FFMPEG_LIBRARIES})
@@ -63,9 +69,17 @@ target_link_libraries(audio_resampler ${FFMPEG_LIBRARIES})
 add_executable(audio_mixer src/audio_mixer.cpp)
 target_link_libraries(audio_mixer ${FFMPEG_LIBRARIES})
 
+add_executable(audio_noise_reduction src/audio_noise_reduction.cpp)
+target_link_libraries(audio_noise_reduction ${FFMPEG_LIBRARIES})
+
+add_executable(audio_format_converter src/audio_format_converter.cpp)
+target_link_libraries(audio_format_converter ${FFMPEG_LIBRARIES})
+
 # Install targets
 install(TARGETS
     video_info video_decoder video_encoder video_transcoder video_filter
+    video_thumbnail video_metadata
     audio_info audio_decoder audio_encoder audio_resampler audio_mixer
+    audio_noise_reduction audio_format_converter
     RUNTIME DESTINATION bin
 )
