@@ -1,6 +1,14 @@
 # FFmpeg Multimedia Processing Samples
 
-A collection of C++ sample applications demonstrating various video and audio processing capabilities using the FFmpeg library.
+A collection of modern C++20 sample applications demonstrating various video and audio processing capabilities using the FFmpeg library.
+
+## Key Features
+
+- ✨ **Modern C++20** - Uses RAII wrappers, std::span, std::string_view, and structured bindings
+- 🛡️ **Exception Safety** - Automatic resource management with smart pointers
+- 📚 **Comprehensive** - 10 samples covering video and audio processing
+- 🌍 **Bilingual Docs** - Complete documentation in English and Korean
+- 🎯 **Production Ready** - Proper error handling and resource management
 
 ## Overview
 
