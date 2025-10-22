@@ -53,6 +53,12 @@ target_link_libraries(video_thumbnail ${FFMPEG_LIBRARIES})
 add_executable(video_metadata src/video_metadata.cpp)
 target_link_libraries(video_metadata ${FFMPEG_LIBRARIES})
 
+add_executable(video_subtitles src/video_subtitles.cpp)
+target_link_libraries(video_subtitles ${FFMPEG_LIBRARIES})
+
+add_executable(video_watermark src/video_watermark.cpp)
+target_link_libraries(video_watermark ${FFMPEG_LIBRARIES})
+
 # Audio sample executables
 add_executable(audio_info src/audio_info.cpp)
 target_link_libraries(audio_info ${FFMPEG_LIBRARIES})
@@ -75,11 +81,17 @@ target_link_libraries(audio_noise_reduction ${FFMPEG_LIBRARIES})
 add_executable(audio_format_converter src/audio_format_converter.cpp)
 target_link_libraries(audio_format_converter ${FFMPEG_LIBRARIES})
 
+add_executable(audio_spectrum src/audio_spectrum.cpp)
+target_link_libraries(audio_spectrum ${FFMPEG_LIBRARIES})
+
+add_executable(audio_equalizer src/audio_equalizer.cpp)
+target_link_libraries(audio_equalizer ${FFMPEG_LIBRARIES})
+
 # Install targets
 install(TARGETS
     video_info video_decoder video_encoder video_transcoder video_filter
-    video_thumbnail video_metadata
+    video_thumbnail video_metadata video_subtitles video_watermark
     audio_info audio_decoder audio_encoder audio_resampler audio_mixer
-    audio_noise_reduction audio_format_converter
+    audio_noise_reduction audio_format_converter audio_spectrum audio_equalizer
     RUNTIME DESTINATION bin
 )

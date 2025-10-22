@@ -6,13 +6,13 @@ A collection of modern C++20 sample applications demonstrating various video and
 
 - ✨ **Modern C++20** - Uses RAII wrappers, std::span, std::string_view, and structured bindings
 - 🛡️ **Exception Safety** - Automatic resource management with smart pointers
-- 📚 **Comprehensive** - 14 samples covering video and audio processing
+- 📚 **Comprehensive** - 18 samples covering video and audio processing
 - 🌍 **Bilingual Docs** - Complete documentation in English and Korean
 - 🎯 **Production Ready** - Proper error handling and resource management
 
 ## Overview
 
-This project contains fourteen sample applications that showcase different aspects of multimedia processing:
+This project contains eighteen sample applications that showcase different aspects of multimedia processing:
 
 ### Video Samples
 1. **video_info** - Read and display video file metadata
@@ -22,15 +22,19 @@ This project contains fourteen sample applications that showcase different aspec
 5. **video_filter** - Apply various video filters and effects
 6. **video_thumbnail** - Generate video thumbnails and preview images
 7. **video_metadata** - Edit and manage video metadata tags
+8. **video_subtitles** - Extract and burn subtitles into videos
+9. **video_watermark** - Add image or text watermarks to videos
 
 ### Audio Samples
-8. **audio_info** - Read and display audio file metadata
-9. **audio_decoder** - Decode audio and save as WAV format
-10. **audio_encoder** - Generate audio tones and encode to various formats
-11. **audio_resampler** - Change audio sample rate and channel layout
-12. **audio_mixer** - Mix two audio files with volume control
-13. **audio_noise_reduction** - Apply noise reduction and audio enhancement
-14. **audio_format_converter** - Convert audio files between different formats
+10. **audio_info** - Read and display audio file metadata
+11. **audio_decoder** - Decode audio and save as WAV format
+12. **audio_encoder** - Generate audio tones and encode to various formats
+13. **audio_resampler** - Change audio sample rate and channel layout
+14. **audio_mixer** - Mix two audio files with volume control
+15. **audio_noise_reduction** - Apply noise reduction and audio enhancement
+16. **audio_format_converter** - Convert audio files between different formats
+17. **audio_spectrum** - Create audio spectrum visualizations
+18. **audio_equalizer** - Apply multi-band equalization
 
 ## Documentation
 
@@ -406,6 +410,170 @@ Convert audio files between different formats with quality control.
 - High-quality resampling
 - Metadata preservation
 
+### 10. Video Subtitles (video_subtitles)
+
+Extract embedded subtitles or burn subtitles into video files.
+
+```bash
+./video_subtitles <command> [options]
+```
+
+**Commands:**
+
+**Extract** - Extract embedded subtitles to SRT file:
+```bash
+./video_subtitles extract video.mkv subtitles.srt
+```
+
+**Burn** - Burn subtitles into video (hardsub):
+```bash
+./video_subtitles burn video.mp4 subtitles.srt output.mp4
+```
+
+**Supported Subtitle Formats:**
+- SRT (SubRip)
+- ASS/SSA (Advanced SubStation Alpha)
+- WebVTT
+
+**Features:**
+- Extract subtitles from video containers
+- Burn subtitles permanently into video
+- Support for multiple subtitle formats
+- Preserves video quality during extraction
+- Automatic subtitle positioning
+
+### 11. Video Watermark (video_watermark)
+
+Add image or text watermarks to video files.
+
+```bash
+./video_watermark <command> <input_video> <output_video> [options]
+```
+
+**Commands:**
+
+**Image Watermark:**
+```bash
+./video_watermark image video.mp4 output.mp4 logo.png bottom_right 0.7
+./video_watermark image video.mp4 output.mp4 watermark.png top_left 1.0
+```
+
+**Text Watermark:**
+```bash
+./video_watermark text video.mp4 output.mp4 "Copyright 2024" bottom_left 24 white 0.8
+./video_watermark text video.mp4 output.mp4 "MyChannel" top_right 32 yellow 0.9
+```
+
+**Positions:**
+- `top_left`, `top_right`, `bottom_left`, `bottom_right`, `center`
+
+**Parameters:**
+- For image: `<watermark_image> <position> [opacity]`
+- For text: `<text> <position> [font_size] [color] [opacity]`
+
+**Features:**
+- Image and text watermark support
+- Flexible positioning (5 positions)
+- Configurable opacity/transparency
+- Font size and color customization for text
+- Maintains video quality
+
+### 12. Audio Spectrum Visualizer (audio_spectrum)
+
+Create spectrum visualization videos from audio files.
+
+```bash
+./audio_spectrum <input_audio> <output_video> <mode> [width] [height] [fps]
+```
+
+**Visualization Modes:**
+- `spectrum` - Frequency spectrum visualization (default)
+- `waveform` - Waveform display with colors
+- `showcqt` - Constant Q Transform spectrum
+- `showfreqs` - Frequency bars visualization
+- `showwaves` - Multi-style waveform display
+
+**Examples:**
+```bash
+# Basic spectrum visualization
+./audio_spectrum music.mp3 spectrum.mp4 spectrum
+
+# High-quality waveform at 60fps
+./audio_spectrum audio.wav waveform.mp4 waveform 1920 1080 60
+
+# CQT spectrum visualization
+./audio_spectrum song.flac visual.mp4 showcqt 1280 720 30
+```
+
+**Parameters:**
+- `width` - Video width in pixels (default: 1280)
+- `height` - Video height in pixels (default: 720)
+- `fps` - Frame rate (default: 30)
+
+**Features:**
+- Five different visualization modes
+- Customizable resolution and frame rate
+- Professional-quality output
+- Perfect for music videos
+- Real-time processing
+
+### 13. Audio Equalizer (audio_equalizer)
+
+Apply multi-band equalization to audio files.
+
+```bash
+./audio_equalizer <input_file> <output_file> <mode> [options]
+```
+
+**Modes:**
+
+**Preset Mode** - Use predefined equalizer presets:
+```bash
+./audio_equalizer input.mp3 output.wav preset bass_boost
+./audio_equalizer music.flac enhanced.wav preset vocal
+```
+
+**Custom Mode** - Create custom equalizer:
+```bash
+./audio_equalizer audio.wav custom.wav custom 100,5,2 1000,3,2 5000,-2,2
+```
+
+**Available Presets:**
+- `flat` - No equalization (bypass)
+- `bass_boost` - Enhanced bass frequencies
+- `treble_boost` - Enhanced treble frequencies
+- `vocal` - Optimized for vocals
+- `classical` - Classical music preset
+- `rock` - Rock music preset
+- `jazz` - Jazz music preset
+- `pop` - Pop music preset
+- `electronic` - Electronic/EDM music preset
+- `acoustic` - Acoustic instruments preset
+
+**Custom Band Format:**
+- `frequency(Hz),gain(dB),width(octaves)`
+- Example: `100,5,2` = 100Hz frequency, +5dB gain, 2 octave width
+
+**Examples:**
+```bash
+# Use bass boost preset
+./audio_equalizer input.mp3 output.wav preset bass_boost
+
+# Custom 3-band equalizer
+./audio_equalizer music.wav custom.wav custom 100,6,1 1000,2,2 10000,-3,1
+
+# Vocal enhancement
+./audio_equalizer podcast.mp3 enhanced.wav preset vocal
+```
+
+**Features:**
+- 10 professional presets
+- Custom multi-band equalizer
+- Precise frequency control
+- Configurable gain per band
+- High-quality processing
+- WAV output format
+
 ## Sample Workflows
 
 ### Video Processing Workflow
@@ -473,13 +641,17 @@ ffmpeg_samples/
 │   ├── video_filter.cpp        # Video filter application
 │   ├── video_thumbnail.cpp     # Thumbnail generator
 │   ├── video_metadata.cpp      # Metadata editor
+│   ├── video_subtitles.cpp     # Subtitle processor
+│   ├── video_watermark.cpp     # Watermark processor
 │   ├── audio_info.cpp          # Audio information reader
 │   ├── audio_decoder.cpp       # Audio decoder
 │   ├── audio_encoder.cpp       # Audio encoder
 │   ├── audio_resampler.cpp     # Audio resampler
 │   ├── audio_mixer.cpp         # Audio mixer
 │   ├── audio_noise_reduction.cpp    # Noise reduction
-│   └── audio_format_converter.cpp   # Format converter
+│   ├── audio_format_converter.cpp   # Format converter
+│   ├── audio_spectrum.cpp      # Spectrum visualizer
+│   └── audio_equalizer.cpp     # Multi-band equalizer
 ├── include/                    # Header files
 │   └── ffmpeg_wrappers.hpp    # FFmpeg RAII wrappers
 ├── build/                      # Build directory (generated)
@@ -587,13 +759,19 @@ This project is intended for educational purposes. FFmpeg itself is licensed und
 
 ## Roadmap
 
-### Phase 2 (Medium-term)
+### Phase 1 ✅ (Completed)
+- **video_thumbnail** - Thumbnail generator
+- **video_metadata** - Metadata editor
+- **audio_noise_reduction** - Noise reduction
+- **audio_format_converter** - Format converter
+
+### Phase 2 ✅ (Completed)
 - **video_subtitles** - Subtitle processing and embedding
 - **video_watermark** - Watermark addition and positioning
 - **audio_spectrum** - Audio spectrum visualization
 - **audio_equalizer** - Multi-band equalizer
 
-### Phase 3 (Long-term)
+### Phase 3 (Next)
 - **video_splitter** - Video splitting and merging
 - **video_slideshow** - Slideshow generator from images
 - **video_stabilization** - Video stabilization
