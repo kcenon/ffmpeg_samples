@@ -86,6 +86,9 @@ target_link_libraries(video_crop_rotate ${FFMPEG_LIBRARIES})
 add_executable(video_speed_control src/video/video_speed_control.cpp)
 target_link_libraries(video_speed_control ${FFMPEG_LIBRARIES})
 
+add_executable(video_gif_creator src/video/video_gif_creator.cpp)
+target_link_libraries(video_gif_creator ${FFMPEG_LIBRARIES})
+
 # Streaming sample executables
 add_executable(streaming_server src/streaming/streaming_server.cpp)
 target_link_libraries(streaming_server ${FFMPEG_LIBRARIES})
@@ -130,7 +133,7 @@ install(TARGETS
     video_thumbnail video_metadata video_subtitles video_watermark
     video_splitter video_slideshow video_stabilization video_transition
     video_concatenate subtitle_generator video_reverse video_crop_rotate video_speed_control
-    streaming_server
+    video_gif_creator streaming_server
     audio_info audio_decoder audio_encoder audio_resampler audio_mixer
     audio_noise_reduction audio_format_converter audio_spectrum audio_equalizer audio_transition
     audio_silence_detect
