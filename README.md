@@ -1,6 +1,6 @@
 # FFmpeg Multimedia Processing Samples
 
-A comprehensive collection of **34 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
+A comprehensive collection of **35 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
 
 ## 🌟 What is this?
 
@@ -11,6 +11,7 @@ This project provides ready-to-use examples for common multimedia tasks:
 - Add subtitles and watermarks
 - Apply audio compression and effects
 - Generate thumbnails and waveforms
+- Split audio by silence detection
 - And much more!
 
 ## ✨ Key Features
@@ -18,7 +19,7 @@ This project provides ready-to-use examples for common multimedia tasks:
 - **🎓 Beginner Friendly** - Clear examples with detailed comments
 - **⚡ Modern C++20** - Uses latest C++ features (RAII, smart pointers, std::format)
 - **🛡️ Safe & Robust** - Automatic memory management, proper error handling
-- **📚 34 Complete Samples** - Covering video, audio, and streaming
+- **📚 35 Complete Samples** - Covering video, audio, and streaming
 - **🌍 Bilingual Docs** - Full documentation in English and Korean
 - **🔧 Production Ready** - Battle-tested code you can use in real projects
 
@@ -109,7 +110,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `video_gif_creator` | Create optimized GIFs | ⭐⭐ Medium |
 | `video_keyframe_extract` | Extract I-frames/keyframes | ⭐⭐ Medium |
 
-### 🎵 Audio Processing (13 samples)
+### 🎵 Audio Processing (14 samples)
 
 | Sample | Description | Difficulty |
 |--------|-------------|------------|
@@ -126,6 +127,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `audio_silence_detect` | Detect silent segments | ⭐⭐ Medium |
 | `audio_waveform` | Create waveform visualization | ⭐⭐ Medium |
 | `audio_compressor` | Dynamic range compression | ⭐⭐⭐ Advanced |
+| `audio_splitter` | Split audio by silence detection | ⭐⭐ Medium |
 
 ### 📡 Streaming (1 sample)
 
@@ -368,6 +370,24 @@ Create audio waveform videos:
 ./audio_waveform input.wav output.mp4 --split --scale sqrt
 ```
 
+### Example 9: Audio Splitting
+
+Split audio files based on silence detection:
+
+```bash
+# Basic splitting
+./audio_splitter audio.mp3
+
+# Custom threshold and duration
+./audio_splitter podcast.wav -t -35 -s 1.0 -m 5.0
+
+# Custom output directory and prefix
+./audio_splitter interview.m4a -o output -p part
+
+# Fine-tuned splitting for quiet audio
+./audio_splitter audio.mp3 -t -50 -s 0.3 -m 2.0 -o segments -p segment
+```
+
 ## 🏗️ Project Structure
 
 ```
@@ -411,7 +431,8 @@ ffmpeg_samples/
 │   │   ├── audio_transition.cpp
 │   │   ├── audio_silence_detect.cpp
 │   │   ├── audio_waveform.cpp
-│   │   └── audio_compressor.cpp
+│   │   ├── audio_compressor.cpp
+│   │   └── audio_splitter.cpp
 │   └── streaming/
 │       └── streaming_server.cpp
 ├── docs/                    # Documentation
