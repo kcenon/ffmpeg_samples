@@ -142,6 +142,9 @@ target_link_libraries(audio_splitter ${FFMPEG_LIBRARIES})
 add_executable(audio_normalization src/audio/audio_normalization.cpp)
 target_link_libraries(audio_normalization ${FFMPEG_LIBRARIES})
 
+add_executable(audio_limiter src/audio/audio_limiter.cpp)
+target_link_libraries(audio_limiter ${FFMPEG_LIBRARIES})
+
 # Install targets
 install(TARGETS
     video_info video_decoder video_encoder video_transcoder video_filter
@@ -152,5 +155,6 @@ install(TARGETS
     audio_info audio_decoder audio_encoder audio_resampler audio_mixer
     audio_noise_reduction audio_format_converter audio_spectrum audio_equalizer audio_transition
     audio_silence_detect audio_waveform audio_compressor audio_splitter audio_normalization
+    audio_limiter
     RUNTIME DESTINATION bin
 )

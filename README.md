@@ -1,6 +1,6 @@
 # FFmpeg Multimedia Processing Samples
 
-A comprehensive collection of **36 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
+A comprehensive collection of **37 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
 
 ## 🌟 What is this?
 
@@ -13,6 +13,7 @@ This project provides ready-to-use examples for common multimedia tasks:
 - Generate thumbnails and waveforms
 - Split audio by silence detection
 - Normalize audio levels (peak/loudness)
+- Apply true peak limiting
 - And much more!
 
 ## ✨ Key Features
@@ -20,7 +21,7 @@ This project provides ready-to-use examples for common multimedia tasks:
 - **🎓 Beginner Friendly** - Clear examples with detailed comments
 - **⚡ Modern C++20** - Uses latest C++ features (RAII, smart pointers, std::format)
 - **🛡️ Safe & Robust** - Automatic memory management, proper error handling
-- **📚 36 Complete Samples** - Covering video, audio, and streaming
+- **📚 37 Complete Samples** - Covering video, audio, and streaming
 - **🌍 Bilingual Docs** - Full documentation in English and Korean
 - **🔧 Production Ready** - Battle-tested code you can use in real projects
 
@@ -111,7 +112,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `video_gif_creator` | Create optimized GIFs | ⭐⭐ Medium |
 | `video_keyframe_extract` | Extract I-frames/keyframes | ⭐⭐ Medium |
 
-### 🎵 Audio Processing (15 samples)
+### 🎵 Audio Processing (16 samples)
 
 | Sample | Description | Difficulty |
 |--------|-------------|------------|
@@ -130,6 +131,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `audio_compressor` | Dynamic range compression | ⭐⭐⭐ Advanced |
 | `audio_splitter` | Split audio by silence detection | ⭐⭐ Medium |
 | `audio_normalization` | Normalize audio levels (peak/LUFS) | ⭐⭐ Medium |
+| `audio_limiter` | True peak limiting with lookahead | ⭐⭐⭐ Advanced |
 
 ### 📡 Streaming (1 sample)
 
@@ -411,6 +413,27 @@ Normalize audio levels for consistent loudness:
 ./audio_normalization audio.wav out.wav -m rms -l -20 -s
 ```
 
+### Example 11: Audio Limiting
+
+Apply true peak limiting to prevent clipping:
+
+```bash
+# Basic mastering limiter
+./audio_limiter input.wav output.wav
+
+# Mastering preset
+./audio_limiter audio.mp3 limited.mp3 -p mastering
+
+# Custom settings with lookahead
+./audio_limiter input.wav output.wav -t -2 -c -0.5 -l 10
+
+# Podcast preset
+./audio_limiter podcast.wav output.wav -p podcast
+
+# Aggressive limiting for streaming
+./audio_limiter music.flac output.flac -p aggressive
+```
+
 ## 🏗️ Project Structure
 
 ```
@@ -456,7 +479,8 @@ ffmpeg_samples/
 │   │   ├── audio_waveform.cpp
 │   │   ├── audio_compressor.cpp
 │   │   ├── audio_splitter.cpp
-│   │   └── audio_normalization.cpp
+│   │   ├── audio_normalization.cpp
+│   │   └── audio_limiter.cpp
 │   └── streaming/
 │       └── streaming_server.cpp
 ├── docs/                    # Documentation
