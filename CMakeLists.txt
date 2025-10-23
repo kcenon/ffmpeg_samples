@@ -133,6 +133,9 @@ target_link_libraries(audio_silence_detect ${FFMPEG_LIBRARIES})
 add_executable(audio_waveform src/audio/audio_waveform.cpp)
 target_link_libraries(audio_waveform ${FFMPEG_LIBRARIES})
 
+add_executable(audio_compressor src/audio/audio_compressor.cpp)
+target_link_libraries(audio_compressor ${FFMPEG_LIBRARIES})
+
 # Install targets
 install(TARGETS
     video_info video_decoder video_encoder video_transcoder video_filter
@@ -142,6 +145,6 @@ install(TARGETS
     video_gif_creator video_keyframe_extract streaming_server
     audio_info audio_decoder audio_encoder audio_resampler audio_mixer
     audio_noise_reduction audio_format_converter audio_spectrum audio_equalizer audio_transition
-    audio_silence_detect audio_waveform
+    audio_silence_detect audio_waveform audio_compressor
     RUNTIME DESTINATION bin
 )
