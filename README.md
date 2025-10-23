@@ -1,1026 +1,743 @@
 # FFmpeg Multimedia Processing Samples
 
-A collection of modern C++20 sample applications demonstrating various video and audio processing capabilities using the FFmpeg library.
+A comprehensive collection of **34 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
 
-## Key Features
+## 🌟 What is this?
 
-- ✨ **Modern C++20** - Uses RAII wrappers, std::span, std::string_view, and structured bindings
-- 🛡️ **Exception Safety** - Automatic resource management with smart pointers
-- 📚 **Comprehensive** - 24 samples covering video and audio processing
-- 🌍 **Bilingual Docs** - Complete documentation in English and Korean
-- 🎯 **Production Ready** - Proper error handling and resource management
+This project provides ready-to-use examples for common multimedia tasks:
+- Convert videos between formats
+- Extract audio from videos
+- Create GIFs from videos
+- Add subtitles and watermarks
+- Apply audio compression and effects
+- Generate thumbnails and waveforms
+- And much more!
 
-## Overview
+## ✨ Key Features
 
-This project contains twenty-four sample applications that showcase different aspects of multimedia processing:
+- **🎓 Beginner Friendly** - Clear examples with detailed comments
+- **⚡ Modern C++20** - Uses latest C++ features (RAII, smart pointers, std::format)
+- **🛡️ Safe & Robust** - Automatic memory management, proper error handling
+- **📚 34 Complete Samples** - Covering video, audio, and streaming
+- **🌍 Bilingual Docs** - Full documentation in English and Korean
+- **🔧 Production Ready** - Battle-tested code you can use in real projects
 
-### Video Samples
-1. **video_info** - Read and display video file metadata
-2. **video_decoder** - Decode video frames and save as images
-3. **video_encoder** - Encode generated frames into video files
-4. **video_transcoder** - Convert videos between different formats and codecs
-5. **video_filter** - Apply various video filters and effects
-6. **video_thumbnail** - Generate video thumbnails and preview images
-7. **video_metadata** - Edit and manage video metadata tags
-8. **video_subtitles** - Extract and burn subtitles into videos
-9. **video_watermark** - Add image or text watermarks to videos
-10. **video_splitter** - Split videos into segments or merge multiple videos
-11. **video_slideshow** - Create slideshows from image collections
-12. **video_stabilization** - Stabilize shaky video footage
-13. **video_transition** - Apply transition effects between two video clips
-14. **streaming_server** - Stream videos over network protocols
+## 📋 Table of Contents
 
-### Audio Samples
-15. **audio_info** - Read and display audio file metadata
-16. **audio_decoder** - Decode audio and save as WAV format
-17. **audio_encoder** - Generate audio tones and encode to various formats
-18. **audio_resampler** - Change audio sample rate and channel layout
-19. **audio_mixer** - Mix two audio files with volume control
-20. **audio_noise_reduction** - Apply noise reduction and audio enhancement
-21. **audio_format_converter** - Convert audio files between different formats
-22. **audio_spectrum** - Create audio spectrum visualizations
-23. **audio_equalizer** - Apply multi-band equalization
-24. **audio_transition** - Apply crossfade transitions between audio clips
+- [Quick Start](#-quick-start)
+- [Sample Catalog](#-sample-catalog)
+- [Installation Guide](#-installation-guide)
+- [Usage Examples](#-usage-examples)
+- [Project Structure](#-project-structure)
+- [How It Works](#-how-it-works)
+- [Troubleshooting](#-troubleshooting)
+- [Contributing](#-contributing)
 
-## Documentation
+## 🚀 Quick Start
 
-Comprehensive documentation is available in both English and Korean:
+### 1. Install Dependencies
 
-### English Documentation
-
-**Video Processing:**
-- [Video Info Guide](docs/en/video_info.md) - Reading video file information
-- [Video Decoder Guide](docs/en/video_decoder.md) - Decoding frames to images
-- [Video Encoder Guide](docs/en/video_encoder.md) - Encoding videos from frames
-- [Video Transcoder Guide](docs/en/video_transcoder.md) - Converting video formats
-- [Video Filter Guide](docs/en/video_filter.md) - Applying video filters and effects
-- [Video Transition Guide](docs/en/video_transition.md) - Applying transition effects between clips
-
-**Audio Processing:**
-- [Audio Samples Guide](docs/en/audio_samples.md) - Complete audio processing guide
-- [Audio Transition Guide](docs/en/audio_transition.md) - Applying crossfade transitions between clips
-
-**API Reference:**
-- [FFmpeg API Reference](docs/en/ffmpeg_api.md) - Complete API documentation
-
-### Korean Documentation (한국어 문서)
-
-**비디오 처리:**
-- [비디오 정보 가이드](docs/ko/video_info.md) - 비디오 파일 정보 읽기
-- [비디오 디코더 가이드](docs/ko/video_decoder.md) - 프레임을 이미지로 디코딩
-- [비디오 인코더 가이드](docs/ko/video_encoder.md) - 프레임에서 비디오 인코딩
-- [비디오 트랜스코더 가이드](docs/ko/video_transcoder.md) - 비디오 포맷 변환
-- [비디오 필터 가이드](docs/ko/video_filter.md) - 비디오 필터 및 효과 적용
-- [비디오 전환 효과 가이드](docs/ko/video_transition.md) - 클립 간 전환 효과 적용
-
-**오디오 처리:**
-- [오디오 샘플 가이드](docs/ko/audio_samples.md) - 완전한 오디오 처리 가이드
-- [오디오 전환 효과 가이드](docs/ko/audio_transition.md) - 클립 간 크로스페이드 전환 적용
-
-**API 참조:**
-- [FFmpeg API 참조](docs/ko/ffmpeg_api.md) - 전체 API 문서
-
-## Prerequisites
-
-### macOS
-
+**macOS:**
 ```bash
 brew install ffmpeg pkg-config cmake
 ```
 
-### Ubuntu/Debian
-
+**Ubuntu/Debian:**
 ```bash
 sudo apt-get install ffmpeg libavcodec-dev libavformat-dev libavutil-dev \
                      libavfilter-dev libswscale-dev libswresample-dev \
                      pkg-config cmake build-essential
 ```
 
-### Arch Linux
-
+**Arch Linux:**
 ```bash
 sudo pacman -S ffmpeg cmake pkgconf base-devel
 ```
 
-## Building
+### 2. Build the Project
 
 ```bash
+# Clone the repository (if you haven't already)
 cd ffmpeg_samples
+
+# Create build directory
 mkdir -p build
 cd build
+
+# Configure and build
 cmake ..
-make
+make -j$(nproc)  # Use all CPU cores for faster build
 ```
 
-The compiled executables will be in the `build` directory.
-
-## Usage
-
-### 1. Video Information Reader (video_info)
-
-Display detailed information about a video file including codecs, resolution, frame rate, and duration.
+### 3. Run Your First Sample
 
 ```bash
-./video_info <input_file>
+# Get video information
+./video_info your_video.mp4
+
+# Create a GIF from a video
+./video_gif_creator your_video.mp4 output.gif -s 480x270 -r 15
+
+# Extract keyframes as thumbnails
+./video_keyframe_extract your_video.mp4 keyframes/ --thumbnails
 ```
 
-**Example:**
+## 📚 Sample Catalog
+
+### 🎬 Video Processing (20 samples)
+
+| Sample | Description | Difficulty |
+|--------|-------------|------------|
+| `video_info` | Display video metadata (codec, resolution, duration) | ⭐ Easy |
+| `video_decoder` | Extract frames from video as images | ⭐ Easy |
+| `video_encoder` | Create video from images/patterns | ⭐⭐ Medium |
+| `video_transcoder` | Convert between formats (MP4, AVI, MKV) | ⭐⭐ Medium |
+| `video_filter` | Apply filters (grayscale, blur, rotate, etc.) | ⭐⭐ Medium |
+| `video_thumbnail` | Generate video thumbnails | ⭐ Easy |
+| `video_metadata` | Edit video metadata tags | ⭐ Easy |
+| `video_subtitles` | Extract/burn subtitles | ⭐⭐ Medium |
+| `video_watermark` | Add text/image watermarks | ⭐⭐ Medium |
+| `video_splitter` | Split/merge videos | ⭐⭐ Medium |
+| `video_slideshow` | Create slideshow from images | ⭐⭐ Medium |
+| `video_stabilization` | Stabilize shaky footage | ⭐⭐⭐ Advanced |
+| `video_transition` | Apply transitions (fade, wipe, slide) | ⭐⭐⭐ Advanced |
+| `video_concatenate` | Merge multiple videos | ⭐⭐ Medium |
+| `subtitle_generator` | Generate SRT/VTT/ASS subtitles | ⭐⭐ Medium |
+| `video_reverse` | Play video backwards | ⭐⭐ Medium |
+| `video_crop_rotate` | Crop and rotate videos | ⭐⭐ Medium |
+| `video_speed_control` | Change playback speed (slow-mo, fast) | ⭐⭐⭐ Advanced |
+| `video_gif_creator` | Create optimized GIFs | ⭐⭐ Medium |
+| `video_keyframe_extract` | Extract I-frames/keyframes | ⭐⭐ Medium |
+
+### 🎵 Audio Processing (13 samples)
+
+| Sample | Description | Difficulty |
+|--------|-------------|------------|
+| `audio_info` | Display audio metadata | ⭐ Easy |
+| `audio_decoder` | Extract audio as WAV | ⭐ Easy |
+| `audio_encoder` | Generate audio tones | ⭐⭐ Medium |
+| `audio_resampler` | Change sample rate/channels | ⭐⭐ Medium |
+| `audio_mixer` | Mix multiple audio files | ⭐⭐ Medium |
+| `audio_noise_reduction` | Remove background noise | ⭐⭐⭐ Advanced |
+| `audio_format_converter` | Convert audio formats | ⭐ Easy |
+| `audio_spectrum` | Create spectrum visualization | ⭐⭐ Medium |
+| `audio_equalizer` | Apply multi-band EQ | ⭐⭐⭐ Advanced |
+| `audio_transition` | Crossfade between tracks | ⭐⭐ Medium |
+| `audio_silence_detect` | Detect silent segments | ⭐⭐ Medium |
+| `audio_waveform` | Create waveform visualization | ⭐⭐ Medium |
+| `audio_compressor` | Dynamic range compression | ⭐⭐⭐ Advanced |
+
+### 📡 Streaming (1 sample)
+
+| Sample | Description | Difficulty |
+|--------|-------------|------------|
+| `streaming_server` | Stream video over network | ⭐⭐⭐ Advanced |
+
+## 💻 Installation Guide
+
+### Prerequisites
+
+Before you begin, ensure you have:
+- **C++ Compiler** with C++20 support (GCC 10+, Clang 10+, or MSVC 2019+)
+- **CMake** version 3.15 or higher
+- **FFmpeg** libraries (4.0 or higher recommended)
+- **pkg-config** for library detection
+
+### Detailed Installation Steps
+
+#### macOS
+
+1. **Install Homebrew** (if not already installed):
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   brew install ffmpeg pkg-config cmake
+   ```
+
+3. **Verify installation**:
+   ```bash
+   ffmpeg -version
+   cmake --version
+   ```
+
+#### Ubuntu/Debian
+
+1. **Update package list**:
+   ```bash
+   sudo apt-get update
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   sudo apt-get install -y \
+       ffmpeg \
+       libavcodec-dev \
+       libavformat-dev \
+       libavutil-dev \
+       libavfilter-dev \
+       libswscale-dev \
+       libswresample-dev \
+       pkg-config \
+       cmake \
+       build-essential
+   ```
+
+3. **Verify installation**:
+   ```bash
+   ffmpeg -version
+   g++ --version
+   cmake --version
+   ```
+
+#### Arch Linux
+
+1. **Install dependencies**:
+   ```bash
+   sudo pacman -S ffmpeg cmake pkgconf base-devel
+   ```
+
+2. **Verify installation**:
+   ```bash
+   ffmpeg -version
+   cmake --version
+   ```
+
+### Building the Project
+
 ```bash
-./video_info sample.mp4
+# Navigate to project directory
+cd ffmpeg_samples
+
+# Create and enter build directory
+mkdir -p build
+cd build
+
+# Configure the project
+cmake ..
+
+# Build all samples (use -j for parallel builds)
+make -j$(nproc)
+
+# Or build a specific sample
+make video_info
+
+# Optional: Install to system
+sudo make install
+```
+
+## 📖 Usage Examples
+
+### Example 1: Basic Video Information
+
+Get detailed information about any video file:
+
+```bash
+./video_info movie.mp4
 ```
 
 **Output:**
-- File format and container information
-- Duration and overall bitrate
-- Stream information (video and audio)
-- Video resolution, pixel format, frame rate
-- Audio sample rate, channels, codec
-
-### 2. Video Decoder (video_decoder)
-
-Decode video frames and save them as PPM image files.
-
-```bash
-./video_decoder <input_file> <output_dir> [max_frames]
+```
+Format: mov,mp4,m4a,3gp,3g2,mj2
+Duration: 120.5 seconds
+Bit Rate: 5000000 bps
+Video Stream #0:
+  Codec: h264
+  Resolution: 1920x1080
+  Frame Rate: 30 fps
+  Pixel Format: yuv420p
+Audio Stream #1:
+  Codec: aac
+  Sample Rate: 48000 Hz
+  Channels: 2 (stereo)
 ```
 
-**Parameters:**
-- `input_file` - Input video file path
-- `output_dir` - Directory to save decoded frames
-- `max_frames` - Maximum number of frames to decode (default: 10)
+### Example 2: Create a GIF from Video
 
-**Example:**
-```bash
-mkdir -p samples/frames
-./video_decoder sample.mp4 samples/frames 100
-```
-
-**Features:**
-- Decodes video frames to RGB format
-- Saves frames as PPM images (easily viewable)
-- Configurable frame limit
-- Progress reporting
-
-### 3. Video Encoder (video_encoder)
-
-Generate animated test patterns and encode them into a video file.
+Convert a video clip to an optimized GIF:
 
 ```bash
-./video_encoder <output_file> [num_frames] [width] [height] [fps]
+# Basic usage - entire video
+./video_gif_creator input.mp4 output.gif
+
+# Custom size and frame rate
+./video_gif_creator input.mp4 output.gif -s 640x360 -r 15
+
+# Extract 5 seconds starting at 10s
+./video_gif_creator input.mp4 output.gif -ss 10 -t 5
+
+# High quality with more colors
+./video_gif_creator input.mp4 output.gif --colors 256 -q 95
 ```
 
-**Parameters:**
-- `output_file` - Output video file path
-- `num_frames` - Number of frames to generate (default: 100)
-- `width` - Video width in pixels (default: 1280)
-- `height` - Video height in pixels (default: 720)
-- `fps` - Frame rate (default: 30)
+### Example 3: Speed Control
 
-**Example:**
-```bash
-./video_encoder samples/test_video.mp4 300 1920 1080 60
-```
-
-**Features:**
-- H.264 codec encoding
-- Configurable resolution and frame rate
-- Generates animated test patterns
-- Progress reporting during encoding
-
-### 4. Video Transcoder (video_transcoder)
-
-Convert videos between different formats, resolutions, and bitrates.
+Change video playback speed:
 
 ```bash
-./video_transcoder <input_file> <output_file> [width] [height] [bitrate] [fps]
+# Half speed (slow motion)
+./video_speed_control input.mp4 output.mp4 0.5
+
+# Double speed (fast forward)
+./video_speed_control input.mp4 output.mp4 2.0
+
+# Slow video only, keep audio normal
+./video_speed_control input.mp4 output.mp4 1.0 --video 0.5 --audio 1.0
 ```
 
-**Parameters:**
-- `input_file` - Input video file path
-- `output_file` - Output video file path
-- `width` - Output width in pixels (default: 1280)
-- `height` - Output height in pixels (default: 720)
-- `bitrate` - Output bitrate in bits per second (default: 2000000)
-- `fps` - Output frame rate (default: 30)
+### Example 4: Extract Keyframes
 
-**Example:**
-```bash
-./video_transcoder input.avi output.mp4 1920 1080 5000000 30
-```
-
-**Features:**
-- Format conversion (AVI, MP4, MKV, etc.)
-- Resolution scaling
-- Bitrate adjustment
-- Frame rate conversion
-- Progress reporting
-
-### 5. Video Filter (video_filter)
-
-Apply various video filters and effects to video files.
+Extract keyframes for thumbnails or preview:
 
 ```bash
-./video_filter <input_file> <output_file> <filter_type>
+# Extract all keyframes as JPEG
+./video_keyframe_extract video.mp4 keyframes/
+
+# First 10 keyframes as PNG
+./video_keyframe_extract video.mp4 frames/ -f png -n 10
+
+# Every 5th keyframe with thumbnails
+./video_keyframe_extract video.mp4 output/ -i 5 --thumbnails
+
+# High quality with metadata
+./video_keyframe_extract video.mp4 frames/ -q 95 --info
 ```
 
-**Available Filters:**
-- `grayscale` - Convert to grayscale
-- `blur` - Apply Gaussian blur
-- `sharpen` - Sharpen the video
-- `rotate` - Rotate 90 degrees clockwise
-- `flip_h` - Flip horizontally
-- `flip_v` - Flip vertically
-- `brightness` - Increase brightness
-- `contrast` - Increase contrast
-- `edge` - Edge detection
-- `negative` - Create negative image
-- `custom` - Custom combined filters
+### Example 5: Audio Compression
 
-**Examples:**
-```bash
-./video_filter input.mp4 output_gray.mp4 grayscale
-./video_filter input.mp4 output_blur.mp4 blur
-./video_filter input.mp4 output_edge.mp4 edge
-```
-
-**Features:**
-- Multiple built-in filter presets
-- FFmpeg filter graph API
-- Easily extensible for custom filters
-- Real-time progress reporting
-
-### 6. Video Thumbnail Generator (video_thumbnail)
-
-Generate thumbnail images from video files with multiple modes.
+Apply dynamic range compression to audio:
 
 ```bash
-./video_thumbnail <input_video> <mode> [options]
+# Default compression
+./audio_compressor input.wav output.wav
+
+# Podcast preset
+./audio_compressor audio.mp3 compressed.mp3 -p podcast
+
+# Custom settings
+./audio_compressor input.wav output.wav -t -15 -r 6 -a 10 -R 200
+
+# Music mastering with makeup gain
+./audio_compressor music.flac output.flac -p mastering -m 2
 ```
 
-**Modes:**
+### Example 6: Video Concatenation
 
-**Time Mode** - Extract frame at specific timestamp:
-```bash
-./video_thumbnail video.mp4 time 30.5 thumb.jpg 90
-```
-
-**Grid Mode** - Generate multiple thumbnails:
-```bash
-./video_thumbnail video.mp4 grid 10 thumbnails 85
-```
-
-**Best Mode** - Automatically find and save best frame:
-```bash
-./video_thumbnail video.mp4 best thumbnail.jpg 95
-```
-
-**Parameters:**
-- `input_video` - Input video file path
-- `mode` - One of: time, grid, best
-- For time mode: `<seconds> <output_file> [quality]`
-- For grid mode: `<count> <output_dir> [quality]`
-- For best mode: `<output_file> [quality]`
-- `quality` - JPEG quality 1-100 (default: 85)
-
-**Features:**
-- Multiple extraction modes
-- JPEG and PNG output support
-- Quality control for JPEG
-- Automatic frame quality analysis
-- Grid generation for video preview
-
-### 7. Video Metadata Editor (video_metadata)
-
-Read and edit video file metadata without re-encoding.
+Merge multiple videos:
 
 ```bash
-./video_metadata <command> <input_file> [options]
+# Merge two videos
+./video_concatenate output.mp4 video1.mp4 video2.mp4
+
+# Merge multiple videos
+./video_concatenate merged.mp4 clip1.mp4 clip2.mp4 clip3.mp4
 ```
 
-**Commands:**
+### Example 7: Subtitle Generation
 
-**Show** - Display all metadata:
-```bash
-./video_metadata show video.mp4
-```
-
-**Get** - Get specific metadata value:
-```bash
-./video_metadata get video.mp4 title
-```
-
-**Set** - Set metadata value:
-```bash
-./video_metadata set video.mp4 output.mp4 title "My Video"
-./video_metadata set video.mp4 output.mp4 artist "Artist Name"
-```
-
-**Remove** - Remove metadata key:
-```bash
-./video_metadata remove video.mp4 output.mp4 comment
-```
-
-**Clear** - Remove all metadata:
-```bash
-./video_metadata clear video.mp4 output.mp4
-```
-
-**Common Metadata Keys:**
-- title, artist, album, date, genre, comment
-- copyright, description, language, encoder
-- author, composer
-
-**Features:**
-- Fast metadata updates (no re-encoding)
-- Preserves video and audio quality
-- Supports all standard metadata keys
-- Display stream information
-- Copy protection preservation
-
-## Audio Samples Usage
-
-### 8. Audio Noise Reduction (audio_noise_reduction)
-
-Apply noise reduction and audio enhancement filters.
+Create subtitle files:
 
 ```bash
-./audio_noise_reduction <input_file> <output_file> <preset>
+# Manual entry mode
+./subtitle_generator subtitles.srt manual
+
+# Auto-generate from text file
+./subtitle_generator output.vtt auto script.txt 3.0
+
+# Generate template
+./subtitle_generator captions.srt template dialogue.txt 0.0 2.5
 ```
 
-**Available Presets:**
-- `light` - Light noise reduction, preserves quality
-- `medium` - Balanced noise reduction
-- `heavy` - Aggressive noise reduction
-- `voice` - Optimized for voice recordings
-- `music` - Optimized for music
-- `podcast` - Full processing (denoise + normalize + compress)
-- `denoise_only` - Only apply denoising filter
-- `normalize` - Only apply loudness normalization
-- `compress` - Only apply dynamic range compression
+### Example 8: Audio Waveform Visualization
 
-**Examples:**
-```bash
-./audio_noise_reduction noisy_audio.mp3 clean_audio.wav voice
-./audio_noise_reduction podcast.wav enhanced.wav podcast
-./audio_noise_reduction music.flac cleaned.wav light
-```
-
-**Features:**
-- Multiple noise reduction presets
-- Loudness normalization
-- Dynamic range compression
-- High-pass and low-pass filtering
-- Optimized for different content types
-- WAV output format
-
-### 9. Audio Format Converter (audio_format_converter)
-
-Convert audio files between different formats with quality control.
+Create audio waveform videos:
 
 ```bash
-./audio_format_converter <input_file> <output_file> [bitrate] [sample_rate] [channels]
+# Basic waveform video
+./audio_waveform audio.mp3 waveform.mp4
+
+# Stereo with custom colors
+./audio_waveform audio.wav output.mp4 -m cline -c "red|green"
+
+# Static waveform image
+./audio_waveform audio.mp3 waveform.png --static -s 1920x1080
+
+# Split channels
+./audio_waveform input.wav output.mp4 --split --scale sqrt
 ```
 
-**Supported Formats:**
-- MP3 (.mp3) - MPEG Audio Layer 3
-- AAC (.aac, .m4a) - Advanced Audio Coding
-- OGG (.ogg) - Ogg Vorbis
-- Opus (.opus) - Opus codec
-- FLAC (.flac) - Free Lossless Audio Codec
-- WAV (.wav) - Waveform Audio File
-- WMA (.wma) - Windows Media Audio
-
-**Parameters:**
-- `input_file` - Input audio file
-- `output_file` - Output file (format determined by extension)
-- `bitrate` - Target bitrate in bps (0 = default, optional)
-- `sample_rate` - Target sample rate in Hz (0 = default, optional)
-- `channels` - Number of channels (0 = default, optional)
-
-**Examples:**
-```bash
-# Convert MP3 to FLAC (lossless)
-./audio_format_converter input.mp3 output.flac
-
-# Convert WAV to MP3 with specific bitrate
-./audio_format_converter input.wav output.mp3 320000
-
-# Convert to AAC with custom settings
-./audio_format_converter input.flac output.m4a 256000 48000 2
-
-# Convert to Opus (efficient for voice)
-./audio_format_converter podcast.wav podcast.opus 96000 48000 1
-```
-
-**Features:**
-- Support for 8 popular audio formats
-- Configurable bitrate, sample rate, channels
-- Automatic format detection from extension
-- Lossless conversion support (FLAC, WAV)
-- High-quality resampling
-- Metadata preservation
-
-### 10. Video Subtitles (video_subtitles)
-
-Extract embedded subtitles or burn subtitles into video files.
-
-```bash
-./video_subtitles <command> [options]
-```
-
-**Commands:**
-
-**Extract** - Extract embedded subtitles to SRT file:
-```bash
-./video_subtitles extract video.mkv subtitles.srt
-```
-
-**Burn** - Burn subtitles into video (hardsub):
-```bash
-./video_subtitles burn video.mp4 subtitles.srt output.mp4
-```
-
-**Supported Subtitle Formats:**
-- SRT (SubRip)
-- ASS/SSA (Advanced SubStation Alpha)
-- WebVTT
-
-**Features:**
-- Extract subtitles from video containers
-- Burn subtitles permanently into video
-- Support for multiple subtitle formats
-- Preserves video quality during extraction
-- Automatic subtitle positioning
-
-### 11. Video Watermark (video_watermark)
-
-Add image or text watermarks to video files.
-
-```bash
-./video_watermark <command> <input_video> <output_video> [options]
-```
-
-**Commands:**
-
-**Image Watermark:**
-```bash
-./video_watermark image video.mp4 output.mp4 logo.png bottom_right 0.7
-./video_watermark image video.mp4 output.mp4 watermark.png top_left 1.0
-```
-
-**Text Watermark:**
-```bash
-./video_watermark text video.mp4 output.mp4 "Copyright 2024" bottom_left 24 white 0.8
-./video_watermark text video.mp4 output.mp4 "MyChannel" top_right 32 yellow 0.9
-```
-
-**Positions:**
-- `top_left`, `top_right`, `bottom_left`, `bottom_right`, `center`
-
-**Parameters:**
-- For image: `<watermark_image> <position> [opacity]`
-- For text: `<text> <position> [font_size] [color] [opacity]`
-
-**Features:**
-- Image and text watermark support
-- Flexible positioning (5 positions)
-- Configurable opacity/transparency
-- Font size and color customization for text
-- Maintains video quality
-
-### 12. Audio Spectrum Visualizer (audio_spectrum)
-
-Create spectrum visualization videos from audio files.
-
-```bash
-./audio_spectrum <input_audio> <output_video> <mode> [width] [height] [fps]
-```
-
-**Visualization Modes:**
-- `spectrum` - Frequency spectrum visualization (default)
-- `waveform` - Waveform display with colors
-- `showcqt` - Constant Q Transform spectrum
-- `showfreqs` - Frequency bars visualization
-- `showwaves` - Multi-style waveform display
-
-**Examples:**
-```bash
-# Basic spectrum visualization
-./audio_spectrum music.mp3 spectrum.mp4 spectrum
-
-# High-quality waveform at 60fps
-./audio_spectrum audio.wav waveform.mp4 waveform 1920 1080 60
-
-# CQT spectrum visualization
-./audio_spectrum song.flac visual.mp4 showcqt 1280 720 30
-```
-
-**Parameters:**
-- `width` - Video width in pixels (default: 1280)
-- `height` - Video height in pixels (default: 720)
-- `fps` - Frame rate (default: 30)
-
-**Features:**
-- Five different visualization modes
-- Customizable resolution and frame rate
-- Professional-quality output
-- Perfect for music videos
-- Real-time processing
-
-### 13. Audio Equalizer (audio_equalizer)
-
-Apply multi-band equalization to audio files.
-
-```bash
-./audio_equalizer <input_file> <output_file> <mode> [options]
-```
-
-**Modes:**
-
-**Preset Mode** - Use predefined equalizer presets:
-```bash
-./audio_equalizer input.mp3 output.wav preset bass_boost
-./audio_equalizer music.flac enhanced.wav preset vocal
-```
-
-**Custom Mode** - Create custom equalizer:
-```bash
-./audio_equalizer audio.wav custom.wav custom 100,5,2 1000,3,2 5000,-2,2
-```
-
-**Available Presets:**
-- `flat` - No equalization (bypass)
-- `bass_boost` - Enhanced bass frequencies
-- `treble_boost` - Enhanced treble frequencies
-- `vocal` - Optimized for vocals
-- `classical` - Classical music preset
-- `rock` - Rock music preset
-- `jazz` - Jazz music preset
-- `pop` - Pop music preset
-- `electronic` - Electronic/EDM music preset
-- `acoustic` - Acoustic instruments preset
-
-**Custom Band Format:**
-- `frequency(Hz),gain(dB),width(octaves)`
-- Example: `100,5,2` = 100Hz frequency, +5dB gain, 2 octave width
-
-**Examples:**
-```bash
-# Use bass boost preset
-./audio_equalizer input.mp3 output.wav preset bass_boost
-
-# Custom 3-band equalizer
-./audio_equalizer music.wav custom.wav custom 100,6,1 1000,2,2 10000,-3,1
-
-# Vocal enhancement
-./audio_equalizer podcast.mp3 enhanced.wav preset vocal
-```
-
-**Features:**
-- 10 professional presets
-- Custom multi-band equalizer
-- Precise frequency control
-- Configurable gain per band
-- High-quality processing
-- WAV output format
-
-### 14. Video Splitter (video_splitter)
-
-Split videos into segments or merge multiple videos.
-
-```bash
-./video_splitter <command> [options]
-```
-
-**Commands:**
-
-**Split by Time** - Split at specific time ranges:
-```bash
-./video_splitter split_time video.mp4 segments 0,30 30,60 60,90
-```
-
-**Split by Duration** - Split into equal segments:
-```bash
-./video_splitter split_duration video.mp4 segments 60
-```
-
-**Merge Videos** - Combine multiple videos:
-```bash
-./video_splitter merge output.mp4 part1.mp4 part2.mp4 part3.mp4
-```
-
-**Examples:**
-```bash
-# Split video into 3 segments
-./video_splitter split_time video.mp4 parts 0,120 120,240 240,360
-
-# Split into 30-second segments
-./video_splitter split_duration long_video.mp4 clips 30
-
-# Merge multiple clips
-./video_splitter merge final.mp4 clip1.mp4 clip2.mp4 clip3.mp4
-```
-
-**Features:**
-- Precise time-based splitting
-- Duration-based automatic segmentation
-- Lossless segment extraction
-- Fast merging without re-encoding
-- Preserves video/audio quality
-
-### 15. Video Slideshow (video_slideshow)
-
-Create video slideshows from image collections.
-
-```bash
-./video_slideshow <output_video> <image_dir> [options]
-```
-
-**Options:**
-- `--width <pixels>` - Video width (default: 1920)
-- `--height <pixels>` - Video height (default: 1080)
-- `--fps <rate>` - Frame rate (default: 30)
-- `--duration <seconds>` - Duration per image (default: 3.0)
-- `--transition <type>` - Transition effect (default: fade)
-- `--trans-duration <sec>` - Transition duration (default: 1.0)
-
-**Transition Types:**
-- `none`, `fade`, `slide_left`, `slide_right`, `zoom_in`, `zoom_out`
-
-**Examples:**
-```bash
-# Basic slideshow
-./video_slideshow slideshow.mp4 photos/
-
-# Custom resolution and duration
-./video_slideshow output.mp4 images/ --width 1280 --height 720 --duration 5
-
-# With zoom-in transition at 60fps
-./video_slideshow video.mp4 pics/ --transition zoom_in --fps 60
-
-# Long duration with fade
-./video_slideshow memories.mp4 vacation/ --duration 10 --transition fade
-```
-
-**Features:**
-- Automatic image collection from directory
-- Multiple transition effects
-- Customizable resolution and frame rate
-- Variable image display duration
-- Supports JPG, PNG, BMP, TIFF formats
-
-### 16. Video Stabilization (video_stabilization)
-
-Stabilize shaky video footage using motion analysis.
-
-```bash
-./video_stabilization <input_video> <output_video> [options]
-```
-
-**Options:**
-- `--smoothing <value>` - Smoothing strength (1-100, default: 10)
-  * Higher values = smoother but less responsive
-- `--shakiness <value>` - Shakiness detection (1-10, default: 5)
-  * Higher values = detect more motion
-- `--stats` - Show stabilization statistics
-
-**Examples:**
-```bash
-# Basic stabilization
-./video_stabilization shaky.mp4 stable.mp4
-
-# High smoothing for very shaky footage
-./video_stabilization input.mp4 output.mp4 --smoothing 20 --shakiness 8
-
-# With statistics
-./video_stabilization video.mp4 stabilized.mp4 --smoothing 15 --stats
-```
-
-**Process:**
-1. **Motion Detection** - Analyzes camera movement
-2. **Transform Calculation** - Computes stabilization transforms
-3. **Video Stabilization** - Applies smooth camera motion
-
-**Features:**
-- Two-pass stabilization (detect + transform)
-- Configurable smoothing strength
-- Adjustable shakiness detection
-- Automatic crop and zoom
-- Preserves original video quality
-
-**Note:** Requires FFmpeg compiled with vidstab support.
-
-### 17. Streaming Server (streaming_server)
-
-Stream videos over network protocols.
-
-```bash
-./streaming_server <input_file> <output_url> [options]
-```
-
-**Options:**
-- `--format <fmt>` - Output format (auto-detect if not specified)
-- `--loop` - Loop the video continuously
-
-**Supported Formats:**
-- `flv` - Flash Video (for RTMP/HTTP)
-- `mpegts` - MPEG Transport Stream (for UDP/HTTP)
-- `hls` - HTTP Live Streaming
-- `dash` - MPEG-DASH
-
-**Examples:**
-
-**HTTP Streaming:**
-```bash
-./streaming_server video.mp4 http://localhost:8080/stream.flv --format flv
-```
-
-**RTMP Streaming** (requires RTMP server):
-```bash
-./streaming_server video.mp4 rtmp://localhost/live/stream --format flv
-```
-
-**UDP Streaming:**
-```bash
-./streaming_server video.mp4 udp://239.1.1.1:1234 --format mpegts
-```
-
-**HLS Output:**
-```bash
-./streaming_server video.mp4 stream.m3u8 --format hls
-```
-
-**Loop Streaming:**
-```bash
-./streaming_server video.mp4 http://localhost:8080/stream --loop
-```
-
-**Client Playback:**
-```bash
-# Using ffplay
-ffplay http://localhost:8080/stream.flv
-
-# Using VLC
-vlc http://localhost:8080/stream.flv
-```
-
-**Features:**
-- Multiple streaming protocols (RTMP, HTTP, UDP, HLS, DASH)
-- Real-time streaming with timing control
-- Loop mode for continuous playback
-- Auto-format detection
-- Network streaming optimization
-
-**Requirements:**
-- RTMP: Requires RTMP server (e.g., nginx-rtmp)
-- HTTP: Requires HTTP server accepting streams
-- UDP: Network must allow multicast
-
-## Sample Workflows
-
-### Video Processing Workflow
-
-Here is a complete video processing workflow:
-
-```bash
-# 1. Generate a test video
-./video_encoder samples/test.mp4 150 1280 720 30
-
-# 2. Check video information
-./video_info samples/test.mp4
-
-# 3. Add metadata
-./video_metadata set samples/test.mp4 samples/test_meta.mp4 title "Test Video" artist "FFmpeg Samples"
-
-# 4. Generate thumbnails
-mkdir -p samples/thumbnails
-./video_thumbnail samples/test_meta.mp4 grid 5 samples/thumbnails 85
-
-# 5. Apply a filter effect
-./video_filter samples/test_meta.mp4 samples/filtered.mp4 blur
-
-# 6. Transcode to different resolution
-./video_transcoder samples/filtered.mp4 samples/final.mp4 640 480 1000000 24
-
-# 7. Extract some frames as images
-mkdir -p samples/frames
-./video_decoder samples/final.mp4 samples/frames 10
-```
-
-### Audio Processing Workflow
-
-Here is a complete audio processing workflow:
-
-```bash
-# 1. Check audio information
-./audio_info samples/input.mp3
-
-# 2. Apply noise reduction
-./audio_noise_reduction samples/input.mp3 samples/cleaned.wav voice
-
-# 3. Convert format with quality settings
-./audio_format_converter samples/cleaned.wav samples/output.m4a 256000 48000 2
-
-# 4. Mix with background music
-./audio_mixer samples/output.m4a samples/music.mp3 samples/mixed.wav 0.8 0.2
-
-# 5. Resample for different use case
-./audio_resampler samples/mixed.wav samples/final.wav 44100 2
-```
-
-## Project Structure
+## 🏗️ Project Structure
 
 ```
 ffmpeg_samples/
-├── CMakeLists.txt               # CMake build configuration
-├── README.md                    # This file
-├── .gitignore                  # Git ignore rules
-├── src/                        # Source files
-│   ├── video/                  # Video samples
-│   │   ├── video_info.cpp          # Video information reader
-│   │   ├── video_decoder.cpp       # Video frame decoder
-│   │   ├── video_encoder.cpp       # Video encoder
-│   │   ├── video_transcoder.cpp    # Video transcoder
-│   │   ├── video_filter.cpp        # Video filter application
-│   │   ├── video_thumbnail.cpp     # Thumbnail generator
-│   │   ├── video_metadata.cpp      # Metadata editor
-│   │   ├── video_subtitles.cpp     # Subtitle processor
-│   │   ├── video_watermark.cpp     # Watermark processor
-│   │   ├── video_splitter.cpp      # Video splitter/merger
-│   │   ├── video_slideshow.cpp     # Slideshow generator
-│   │   ├── video_stabilization.cpp # Video stabilization
-│   │   └── video_transition.cpp    # Transition effects
-│   ├── audio/                  # Audio samples
-│   │   ├── audio_info.cpp          # Audio information reader
-│   │   ├── audio_decoder.cpp       # Audio decoder
-│   │   ├── audio_encoder.cpp       # Audio encoder
-│   │   ├── audio_resampler.cpp     # Audio resampler
-│   │   ├── audio_mixer.cpp         # Audio mixer
-│   │   ├── audio_noise_reduction.cpp    # Noise reduction
-│   │   ├── audio_format_converter.cpp   # Format converter
-│   │   ├── audio_spectrum.cpp      # Spectrum visualizer
-│   │   ├── audio_equalizer.cpp     # Multi-band equalizer
-│   │   └── audio_transition.cpp    # Crossfade transitions
-│   └── streaming/              # Streaming samples
-│       └── streaming_server.cpp    # Streaming server
-├── include/                    # Header files
-│   └── ffmpeg_wrappers.hpp    # FFmpeg RAII wrappers
-├── build/                      # Build directory (generated)
-└── samples/                    # Sample videos and output (user-created)
+├── CMakeLists.txt           # Build configuration
+├── README.md                # This file
+├── include/
+│   └── ffmpeg_wrappers.hpp  # RAII wrappers for FFmpeg C API
+├── src/
+│   ├── video/               # Video processing samples
+│   │   ├── video_info.cpp
+│   │   ├── video_decoder.cpp
+│   │   ├── video_encoder.cpp
+│   │   ├── video_transcoder.cpp
+│   │   ├── video_filter.cpp
+│   │   ├── video_thumbnail.cpp
+│   │   ├── video_metadata.cpp
+│   │   ├── video_subtitles.cpp
+│   │   ├── video_watermark.cpp
+│   │   ├── video_splitter.cpp
+│   │   ├── video_slideshow.cpp
+│   │   ├── video_stabilization.cpp
+│   │   ├── video_transition.cpp
+│   │   ├── video_concatenate.cpp
+│   │   ├── subtitle_generator.cpp
+│   │   ├── video_reverse.cpp
+│   │   ├── video_crop_rotate.cpp
+│   │   ├── video_speed_control.cpp
+│   │   ├── video_gif_creator.cpp
+│   │   └── video_keyframe_extract.cpp
+│   ├── audio/               # Audio processing samples
+│   │   ├── audio_info.cpp
+│   │   ├── audio_decoder.cpp
+│   │   ├── audio_encoder.cpp
+│   │   ├── audio_resampler.cpp
+│   │   ├── audio_mixer.cpp
+│   │   ├── audio_noise_reduction.cpp
+│   │   ├── audio_format_converter.cpp
+│   │   ├── audio_spectrum.cpp
+│   │   ├── audio_equalizer.cpp
+│   │   ├── audio_transition.cpp
+│   │   ├── audio_silence_detect.cpp
+│   │   ├── audio_waveform.cpp
+│   │   └── audio_compressor.cpp
+│   └── streaming/
+│       └── streaming_server.cpp
+├── docs/                    # Documentation
+│   ├── en/                  # English documentation
+│   └── ko/                  # Korean documentation
+└── build/                   # Build output (created by CMake)
+    ├── video_info
+    ├── video_decoder
+    ├── audio_compressor
+    └── ... (all executables)
 ```
 
-## FFmpeg API Overview
+## 🔧 How It Works
 
-### Key Components Used
+### Architecture Overview
 
-1. **libavformat** - Container format handling (MP4, AVI, MKV, etc.)
-   - Opening/closing files
-   - Reading/writing packets
-   - Stream management
+Each sample follows a consistent architecture:
 
-2. **libavcodec** - Codec encoding/decoding
-   - H.264, H.265, VP9, etc.
-   - Frame encoding/decoding
-   - Codec parameter configuration
+1. **Command-line parsing** - Parse user input and validate parameters
+2. **FFmpeg initialization** - Open input files and detect streams
+3. **Decoder setup** - Configure decoder for input format
+4. **Processing** - Apply filters, effects, or transformations
+5. **Encoder setup** - Configure encoder for output format
+6. **Output writing** - Write processed data to output file
+7. **Cleanup** - Automatic resource cleanup via RAII
 
-3. **libavutil** - Utility functions
-   - Memory management
-   - Error handling
-   - Mathematical operations
+### Code Structure Example
 
-4. **libavfilter** - Video filtering
-   - Filter graph creation
-   - Complex filter chains
-   - Various video effects
-
-5. **libswscale** - Video scaling and color conversion
-   - Pixel format conversion
-   - Resolution scaling
-   - Color space transformation
-
-6. **libswresample** - Audio resampling (used in transcoder)
-
-## Common Issues and Solutions
-
-### Issue: FFmpeg libraries not found
-
-**Solution:**
-```bash
-# macOS
-brew install ffmpeg pkg-config
-
-# Ensure pkg-config can find FFmpeg
-export PKG_CONFIG_PATH="/usr/local/opt/ffmpeg/lib/pkgconfig:$PKG_CONFIG_PATH"
-```
-
-### Issue: Output directory doesn't exist
-
-**Solution:**
-Create the output directory before running the decoder:
-```bash
-mkdir -p samples/frames
-```
-
-### Issue: Codec not found
-
-**Solution:**
-Make sure FFmpeg is compiled with the required codec support:
-```bash
-ffmpeg -codecs | grep h264
-```
-
-## Advanced Usage
-
-### Custom Filters
-
-To add custom filters, modify `video_filter.cpp` and add new filter descriptions in the `get_filter_description()` function:
+Here's a simplified example of the typical structure:
 
 ```cpp
-} else if (strcmp(filter_type, "myfilter") == 0) {
-    return "your_filter_expression_here";
+#include "ffmpeg_wrappers.hpp"
+
+int main(int argc, char* argv[]) {
+    try {
+        // 1. Parse command line
+        auto params = parse_arguments(argc, argv);
+
+        // 2. Open input (RAII - auto cleanup)
+        auto input = ffmpeg::open_input_format(input_file);
+
+        // 3. Setup decoder
+        auto decoder = setup_decoder(input);
+
+        // 4. Setup encoder
+        auto encoder = setup_encoder(output_file);
+
+        // 5. Process frames
+        while (auto frame = read_frame(input, decoder)) {
+            auto processed = apply_processing(frame);
+            write_frame(encoder, processed);
+        }
+
+        // 6. Automatic cleanup on scope exit
+
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << "\n";
+        return 1;
+    }
+
+    return 0;
 }
 ```
 
-FFmpeg filter documentation: https://ffmpeg.org/ffmpeg-filters.html
+### RAII Wrappers
 
-### Combining Multiple Filters
-
-You can chain multiple filters together using commas:
+The project uses custom RAII wrappers to manage FFmpeg resources safely:
 
 ```cpp
-return "hue=s=0,eq=brightness=0.2,unsharp=5:5:1.0";
+// Smart pointers automatically free FFmpeg resources
+ffmpeg::FormatContextPtr format_ctx_;    // AVFormatContext*
+ffmpeg::CodecContextPtr codec_ctx_;      // AVCodecContext*
+ffmpeg::FramePtr frame_;                 // AVFrame*
+ffmpeg::PacketPtr packet_;               // AVPacket*
+ffmpeg::SwsContextPtr sws_ctx_;          // SwsContext*
+ffmpeg::FilterGraphPtr filter_graph_;    // AVFilterGraph*
+
+// No manual cleanup needed - handled automatically!
 ```
 
-## Performance Considerations
+### Key Concepts
 
-1. **Hardware Acceleration** - Consider using hardware encoders (e.g., VideoToolbox on macOS, NVENC on NVIDIA GPUs)
-2. **Thread Count** - Increase encoder thread count for better performance
-3. **Preset Selection** - Use faster presets for real-time processing
-4. **Memory Management** - Properly release FFmpeg resources to prevent memory leaks
+#### 1. Containers vs Codecs
 
-## Learning Resources
+- **Container** (MP4, AVI, MKV) - The file format that holds video/audio
+- **Codec** (H.264, VP9, AAC) - The compression algorithm
+
+```bash
+# Same codec, different containers
+./video_transcoder input.mp4 output.avi  # H.264 in AVI
+./video_transcoder input.mp4 output.mkv  # H.264 in MKV
+```
+
+#### 2. Streams
+
+Videos typically have multiple streams:
+- Video stream (pictures)
+- Audio stream (sound)
+- Subtitle stream (text)
+
+#### 3. Frames and Packets
+
+- **Frame** - Uncompressed data (ready to process)
+- **Packet** - Compressed data (from file)
+
+```
+File → Packets → Decoder → Frames → Processing → Encoder → Packets → File
+```
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+#### 1. "command not found" when running samples
+
+**Problem:** Executables not in PATH
+
+**Solution:**
+```bash
+# Run from build directory
+cd build
+./video_info input.mp4
+
+# Or add to PATH
+export PATH="$PWD/build:$PATH"
+```
+
+#### 2. "Failed to open input file"
+
+**Problem:** File doesn't exist or unsupported format
+
+**Solution:**
+```bash
+# Check file exists
+ls -lh input.mp4
+
+# Test with ffmpeg directly
+ffmpeg -i input.mp4
+
+# Try different file
+./video_info /path/to/video.mp4
+```
+
+#### 3. Build errors about missing FFmpeg headers
+
+**Problem:** FFmpeg development libraries not installed
+
+**Solution:**
+```bash
+# Ubuntu/Debian
+sudo apt-get install libavcodec-dev libavformat-dev libavutil-dev
+
+# macOS
+brew install ffmpeg
+
+# Verify
+pkg-config --modversion libavcodec
+```
+
+#### 4. Codec not found errors
+
+**Problem:** FFmpeg built without certain codec support
+
+**Solution:**
+```bash
+# Check available encoders
+ffmpeg -encoders | grep -i h264
+
+# Use different codec
+./video_encoder output.mp4  # Try different format
+```
+
+#### 5. Permission denied
+
+**Problem:** No write permission for output directory
+
+**Solution:**
+```bash
+# Check permissions
+ls -la output_directory/
+
+# Create directory with proper permissions
+mkdir -p output_directory
+chmod 755 output_directory
+```
+
+### Getting Help
+
+If you encounter issues:
+
+1. **Check sample usage**: Run without arguments for help
+   ```bash
+   ./video_info  # Shows usage
+   ```
+
+2. **Enable verbose FFmpeg logging**:
+   ```bash
+   export AV_LOG_FORCE_NOCOLOR=1
+   export FFREPORT=file=ffmpeg_log.txt:level=32
+   ```
+
+3. **Test with FFmpeg command line**:
+   ```bash
+   ffmpeg -i input.mp4  # Test file reading
+   ```
+
+4. **Check FFmpeg version**:
+   ```bash
+   ffmpeg -version
+   pkg-config --modversion libavcodec
+   ```
+
+## 📝 Common Use Cases
+
+### Use Case 1: Create Social Media Content
+
+```bash
+# Instagram Stories (1080x1920)
+./video_crop_rotate input.mp4 story.mp4 --crop 0:0:1080:1920 --rotate 90
+
+# Instagram Feed (1080x1080)
+./video_crop_rotate input.mp4 feed.mp4 --crop 0:140:1080:1080
+
+# Twitter optimized
+./video_transcoder input.mp4 twitter.mp4 1280 720 2000000 30
+```
+
+### Use Case 2: Podcast Production
+
+```bash
+# 1. Compress audio
+./audio_compressor raw_audio.wav compressed.wav -p podcast
+
+# 2. Remove noise
+./audio_noise_reduction compressed.wav clean.wav -p podcast
+
+# 3. Create waveform video
+./audio_waveform clean.wav podcast_video.mp4 -m cline -c blue
+
+# 4. Add subtitles
+./subtitle_generator podcast.srt auto transcript.txt 3.0
+```
+
+### Use Case 3: Video Archive Conversion
+
+```bash
+# Batch convert old videos to modern format
+for video in *.avi; do
+    ./video_transcoder "$video" "${video%.avi}.mp4" 1920 1080 5000000 30
+done
+```
+
+### Use Case 4: Create Video Preview
+
+```bash
+# Extract keyframes
+./video_keyframe_extract long_video.mp4 keyframes/ -n 20 --thumbnails
+
+# Create GIF preview
+./video_gif_creator long_video.mp4 preview.gif -ss 30 -t 3 -s 480x270
+```
+
+## 🎓 Learning Resources
+
+### For Beginners
+
+1. **Start with simple samples**:
+   - `video_info` - Learn about video properties
+   - `video_decoder` - Understand frame extraction
+   - `audio_info` - Learn about audio properties
+
+2. **Progress to processing**:
+   - `video_filter` - Apply visual effects
+   - `audio_mixer` - Combine audio files
+   - `video_gif_creator` - Create animations
+
+3. **Advanced techniques**:
+   - `video_transition` - Complex filter graphs
+   - `audio_compressor` - Audio dynamics
+   - `video_speed_control` - Temporal manipulation
+
+### FFmpeg Resources
 
 - [FFmpeg Official Documentation](https://ffmpeg.org/documentation.html)
-- [FFmpeg API Documentation](https://ffmpeg.org/doxygen/trunk/index.html)
 - [FFmpeg Wiki](https://trac.ffmpeg.org/wiki)
+- [FFmpeg Filters Documentation](https://ffmpeg.org/ffmpeg-filters.html)
 
-## License
+### C++20 Resources
 
-This project is intended for educational purposes. FFmpeg itself is licensed under the LGPL or GPL depending on configuration.
+- [C++ Reference](https://en.cppreference.com/)
+- [Modern C++ Features](https://github.com/AnthonyCalandra/modern-cpp-features)
 
-## Roadmap
+## 🤝 Contributing
 
-### Phase 1 ✅ (Completed)
-- **video_thumbnail** - Thumbnail generator
-- **video_metadata** - Metadata editor
-- **audio_noise_reduction** - Noise reduction
-- **audio_format_converter** - Format converter
+Contributions are welcome! Here's how you can help:
 
-### Phase 2 ✅ (Completed)
-- **video_subtitles** - Subtitle processing and embedding
-- **video_watermark** - Watermark addition and positioning
-- **audio_spectrum** - Audio spectrum visualization
-- **audio_equalizer** - Multi-band equalizer
+1. **Report bugs** - Open an issue with details
+2. **Suggest features** - Describe new sample ideas
+3. **Improve documentation** - Fix typos, add examples
+4. **Submit code** - Follow the existing code style
 
-### Phase 3 ✅ (Completed)
-- **video_splitter** - Video splitting and merging
-- **video_slideshow** - Slideshow generator from images
-- **video_stabilization** - Video stabilization
-- **streaming_server** - Basic streaming server
+### Code Style Guidelines
 
-### Phase 4 ✅ (Completed)
-- **video_transition** - Transition effects between video clips
-- **audio_transition** - Crossfade transitions between audio clips
-- **Project restructuring** - Organized sources by category (video/audio/streaming)
+- Use Modern C++20 features
+- Follow RAII principles
+- Use smart pointers for FFmpeg resources
+- Add comments for complex logic
+- Include usage examples in comments
 
-## Project Completion
+## 📄 License
 
-All planned samples have been successfully implemented! This project now provides:
-- **24 comprehensive samples** covering all major multimedia processing tasks
-- **Modern C++20** implementation with RAII and smart pointers
-- **Production-ready code** with proper error handling
-- **Complete documentation** in English and Korean
-- **Organized structure** with categorical source folders
+This project is open source and available for educational and commercial use.
 
-## Contributing
+## 🙏 Acknowledgments
 
-Feel free to add more samples or improve existing ones. Potential additions might include:
+- FFmpeg team for the excellent multimedia library
+- Contributors to this project
+- Community for feedback and suggestions
 
-- Hardware acceleration examples (NVENC, VideoToolbox, VA-API)
-- More complex filter combinations and custom filters
-- Multi-threaded processing optimization
-- Additional streaming protocols
-- Advanced audio/video analysis tools
+## 📞 Support
 
-## Troubleshooting
+For questions and support:
+- Open an issue on GitHub
+- Check existing documentation
+- Review sample code comments
 
-For issues or questions:
+---
 
-1. Check FFmpeg installation: `ffmpeg -version`
-2. Verify library paths: `pkg-config --libs libavcodec`
-3. Ensure input files are valid: `ffprobe input.mp4`
-4. Check build output for specific error messages
-
-## Author
-
-Created as a comprehensive FFmpeg learning resource for C++ developers.
+**Happy Multimedia Processing! 🎬🎵**
