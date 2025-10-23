@@ -71,6 +71,9 @@ target_link_libraries(video_stabilization ${FFMPEG_LIBRARIES})
 add_executable(video_transition src/video/video_transition.cpp)
 target_link_libraries(video_transition ${FFMPEG_LIBRARIES})
 
+add_executable(video_concatenate src/video/video_concatenate.cpp)
+target_link_libraries(video_concatenate ${FFMPEG_LIBRARIES})
+
 # Streaming sample executables
 add_executable(streaming_server src/streaming/streaming_server.cpp)
 target_link_libraries(streaming_server ${FFMPEG_LIBRARIES})
@@ -110,7 +113,8 @@ target_link_libraries(audio_transition ${FFMPEG_LIBRARIES})
 install(TARGETS
     video_info video_decoder video_encoder video_transcoder video_filter
     video_thumbnail video_metadata video_subtitles video_watermark
-    video_splitter video_slideshow video_stabilization video_transition streaming_server
+    video_splitter video_slideshow video_stabilization video_transition
+    video_concatenate streaming_server
     audio_info audio_decoder audio_encoder audio_resampler audio_mixer
     audio_noise_reduction audio_format_converter audio_spectrum audio_equalizer audio_transition
     RUNTIME DESTINATION bin
