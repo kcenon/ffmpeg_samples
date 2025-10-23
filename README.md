@@ -1,6 +1,6 @@
 # FFmpeg Multimedia Processing Samples
 
-A comprehensive collection of **39 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
+A comprehensive collection of **40 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
 
 ## 🌟 What is this?
 
@@ -21,7 +21,7 @@ This project provides ready-to-use examples for common multimedia tasks:
 - **🎓 Beginner Friendly** - Clear examples with detailed comments
 - **⚡ Modern C++20** - Uses latest C++ features (RAII, smart pointers, std::format)
 - **🛡️ Safe & Robust** - Automatic memory management, proper error handling
-- **📚 39 Complete Samples** - Covering video, audio, and streaming
+- **📚 40 Complete Samples** - Covering video, audio, and streaming
 - **🌍 Bilingual Docs** - Full documentation in English and Korean
 - **🔧 Production Ready** - Battle-tested code you can use in real projects
 
@@ -112,7 +112,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `video_gif_creator` | Create optimized GIFs | ⭐⭐ Medium |
 | `video_keyframe_extract` | Extract I-frames/keyframes | ⭐⭐ Medium |
 
-### 🎵 Audio Processing (18 samples)
+### 🎵 Audio Processing (19 samples)
 
 | Sample | Description | Difficulty |
 |--------|-------------|------------|
@@ -134,6 +134,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `audio_limiter` | True peak limiting with lookahead | ⭐⭐⭐ Advanced |
 | `audio_delay` | Delay/echo effects (simple, multi-tap, ping-pong) | ⭐⭐ Medium |
 | `audio_pitch_shift` | Pitch shifting with tempo preservation | ⭐⭐⭐ Advanced |
+| `audio_beat_detector` | BPM detection and beat timestamp extraction | ⭐⭐⭐ Advanced |
 
 ### 📡 Streaming (1 sample)
 
@@ -481,6 +482,30 @@ Shift pitch while preserving tempo:
 ./audio_pitch_shift music.flac pitched.flac -s 5 -t
 ```
 
+### Example 15: Beat Detection and BPM Analysis
+
+Detect beats and measure BPM in audio files:
+
+```bash
+# Basic BPM detection (automatic method)
+./audio_beat_detector music.mp3
+
+# Using onset detection method (best quality)
+./audio_beat_detector song.wav -m onset
+
+# Export beat timestamps to CSV
+./audio_beat_detector audio.flac -e beats.csv
+
+# High sensitivity detection with verbose output
+./audio_beat_detector track.m4a -s 0.7 -v -e
+
+# Detect specific BPM range
+./audio_beat_detector dance.mp3 -b 120-140
+
+# Energy-based detection with custom interval
+./audio_beat_detector music.wav -m energy -i 0.4 -e beat_map.csv
+```
+
 ## 🏗️ Project Structure
 
 ```
@@ -529,7 +554,8 @@ ffmpeg_samples/
 │   │   ├── audio_normalization.cpp
 │   │   ├── audio_limiter.cpp
 │   │   ├── audio_delay.cpp
-│   │   └── audio_pitch_shift.cpp
+│   │   ├── audio_pitch_shift.cpp
+│   │   └── audio_beat_detector.cpp
 │   └── streaming/
 │       └── streaming_server.cpp
 ├── docs/                    # Documentation
