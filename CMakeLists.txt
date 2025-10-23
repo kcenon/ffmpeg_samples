@@ -32,71 +32,72 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 # Video sample executables
-add_executable(video_info src/video_info.cpp)
+add_executable(video_info src/video/video_info.cpp)
 target_link_libraries(video_info ${FFMPEG_LIBRARIES})
 
-add_executable(video_decoder src/video_decoder.cpp)
+add_executable(video_decoder src/video/video_decoder.cpp)
 target_link_libraries(video_decoder ${FFMPEG_LIBRARIES})
 
-add_executable(video_encoder src/video_encoder.cpp)
+add_executable(video_encoder src/video/video_encoder.cpp)
 target_link_libraries(video_encoder ${FFMPEG_LIBRARIES})
 
-add_executable(video_transcoder src/video_transcoder.cpp)
+add_executable(video_transcoder src/video/video_transcoder.cpp)
 target_link_libraries(video_transcoder ${FFMPEG_LIBRARIES})
 
-add_executable(video_filter src/video_filter.cpp)
+add_executable(video_filter src/video/video_filter.cpp)
 target_link_libraries(video_filter ${FFMPEG_LIBRARIES})
 
-add_executable(video_thumbnail src/video_thumbnail.cpp)
+add_executable(video_thumbnail src/video/video_thumbnail.cpp)
 target_link_libraries(video_thumbnail ${FFMPEG_LIBRARIES})
 
-add_executable(video_metadata src/video_metadata.cpp)
+add_executable(video_metadata src/video/video_metadata.cpp)
 target_link_libraries(video_metadata ${FFMPEG_LIBRARIES})
 
-add_executable(video_subtitles src/video_subtitles.cpp)
+add_executable(video_subtitles src/video/video_subtitles.cpp)
 target_link_libraries(video_subtitles ${FFMPEG_LIBRARIES})
 
-add_executable(video_watermark src/video_watermark.cpp)
+add_executable(video_watermark src/video/video_watermark.cpp)
 target_link_libraries(video_watermark ${FFMPEG_LIBRARIES})
 
-add_executable(video_splitter src/video_splitter.cpp)
+add_executable(video_splitter src/video/video_splitter.cpp)
 target_link_libraries(video_splitter ${FFMPEG_LIBRARIES})
 
-add_executable(video_slideshow src/video_slideshow.cpp)
+add_executable(video_slideshow src/video/video_slideshow.cpp)
 target_link_libraries(video_slideshow ${FFMPEG_LIBRARIES})
 
-add_executable(video_stabilization src/video_stabilization.cpp)
+add_executable(video_stabilization src/video/video_stabilization.cpp)
 target_link_libraries(video_stabilization ${FFMPEG_LIBRARIES})
 
-add_executable(streaming_server src/streaming_server.cpp)
+# Streaming sample executables
+add_executable(streaming_server src/streaming/streaming_server.cpp)
 target_link_libraries(streaming_server ${FFMPEG_LIBRARIES})
 
 # Audio sample executables
-add_executable(audio_info src/audio_info.cpp)
+add_executable(audio_info src/audio/audio_info.cpp)
 target_link_libraries(audio_info ${FFMPEG_LIBRARIES})
 
-add_executable(audio_decoder src/audio_decoder.cpp)
+add_executable(audio_decoder src/audio/audio_decoder.cpp)
 target_link_libraries(audio_decoder ${FFMPEG_LIBRARIES})
 
-add_executable(audio_encoder src/audio_encoder.cpp)
+add_executable(audio_encoder src/audio/audio_encoder.cpp)
 target_link_libraries(audio_encoder ${FFMPEG_LIBRARIES})
 
-add_executable(audio_resampler src/audio_resampler.cpp)
+add_executable(audio_resampler src/audio/audio_resampler.cpp)
 target_link_libraries(audio_resampler ${FFMPEG_LIBRARIES})
 
-add_executable(audio_mixer src/audio_mixer.cpp)
+add_executable(audio_mixer src/audio/audio_mixer.cpp)
 target_link_libraries(audio_mixer ${FFMPEG_LIBRARIES})
 
-add_executable(audio_noise_reduction src/audio_noise_reduction.cpp)
+add_executable(audio_noise_reduction src/audio/audio_noise_reduction.cpp)
 target_link_libraries(audio_noise_reduction ${FFMPEG_LIBRARIES})
 
-add_executable(audio_format_converter src/audio_format_converter.cpp)
+add_executable(audio_format_converter src/audio/audio_format_converter.cpp)
 target_link_libraries(audio_format_converter ${FFMPEG_LIBRARIES})
 
-add_executable(audio_spectrum src/audio_spectrum.cpp)
+add_executable(audio_spectrum src/audio/audio_spectrum.cpp)
 target_link_libraries(audio_spectrum ${FFMPEG_LIBRARIES})
 
-add_executable(audio_equalizer src/audio_equalizer.cpp)
+add_executable(audio_equalizer src/audio/audio_equalizer.cpp)
 target_link_libraries(audio_equalizer ${FFMPEG_LIBRARIES})
 
 # Install targets
