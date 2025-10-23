@@ -1,6 +1,6 @@
 # FFmpeg Multimedia Processing Samples
 
-A comprehensive collection of **37 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
+A comprehensive collection of **38 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
 
 ## 🌟 What is this?
 
@@ -21,7 +21,7 @@ This project provides ready-to-use examples for common multimedia tasks:
 - **🎓 Beginner Friendly** - Clear examples with detailed comments
 - **⚡ Modern C++20** - Uses latest C++ features (RAII, smart pointers, std::format)
 - **🛡️ Safe & Robust** - Automatic memory management, proper error handling
-- **📚 37 Complete Samples** - Covering video, audio, and streaming
+- **📚 38 Complete Samples** - Covering video, audio, and streaming
 - **🌍 Bilingual Docs** - Full documentation in English and Korean
 - **🔧 Production Ready** - Battle-tested code you can use in real projects
 
@@ -112,7 +112,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `video_gif_creator` | Create optimized GIFs | ⭐⭐ Medium |
 | `video_keyframe_extract` | Extract I-frames/keyframes | ⭐⭐ Medium |
 
-### 🎵 Audio Processing (16 samples)
+### 🎵 Audio Processing (17 samples)
 
 | Sample | Description | Difficulty |
 |--------|-------------|------------|
@@ -132,6 +132,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `audio_splitter` | Split audio by silence detection | ⭐⭐ Medium |
 | `audio_normalization` | Normalize audio levels (peak/LUFS) | ⭐⭐ Medium |
 | `audio_limiter` | True peak limiting with lookahead | ⭐⭐⭐ Advanced |
+| `audio_delay` | Delay/echo effects (simple, multi-tap, ping-pong) | ⭐⭐ Medium |
 
 ### 📡 Streaming (1 sample)
 
@@ -434,6 +435,30 @@ Apply true peak limiting to prevent clipping:
 ./audio_limiter music.flac output.flac -p aggressive
 ```
 
+### Example 12: Audio Delay/Echo
+
+Apply delay and echo effects:
+
+```bash
+# Basic delay effect
+./audio_delay input.wav output.wav
+
+# Slapback echo preset
+./audio_delay audio.mp3 delayed.mp3 -p slap
+
+# Custom delay settings
+./audio_delay input.wav output.wav -d 250 -f 0.6 -x 0.3
+
+# Vocal doubling effect
+./audio_delay vocal.wav doubled.wav -p vocal
+
+# Ping-pong delay for guitar
+./audio_delay guitar.wav echo.wav -m pingpong -d 375 -f 0.4
+
+# Tempo-synced delay at 120 BPM
+./audio_delay music.flac output.flac -t 120 -f 0.5
+```
+
 ## 🏗️ Project Structure
 
 ```
@@ -480,7 +505,8 @@ ffmpeg_samples/
 │   │   ├── audio_compressor.cpp
 │   │   ├── audio_splitter.cpp
 │   │   ├── audio_normalization.cpp
-│   │   └── audio_limiter.cpp
+│   │   ├── audio_limiter.cpp
+│   │   └── audio_delay.cpp
 │   └── streaming/
 │       └── streaming_server.cpp
 ├── docs/                    # Documentation
