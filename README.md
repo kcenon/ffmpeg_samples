@@ -1,6 +1,6 @@
 # FFmpeg Multimedia Processing Samples
 
-A comprehensive collection of **38 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
+A comprehensive collection of **39 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
 
 ## 🌟 What is this?
 
@@ -21,7 +21,7 @@ This project provides ready-to-use examples for common multimedia tasks:
 - **🎓 Beginner Friendly** - Clear examples with detailed comments
 - **⚡ Modern C++20** - Uses latest C++ features (RAII, smart pointers, std::format)
 - **🛡️ Safe & Robust** - Automatic memory management, proper error handling
-- **📚 38 Complete Samples** - Covering video, audio, and streaming
+- **📚 39 Complete Samples** - Covering video, audio, and streaming
 - **🌍 Bilingual Docs** - Full documentation in English and Korean
 - **🔧 Production Ready** - Battle-tested code you can use in real projects
 
@@ -112,7 +112,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `video_gif_creator` | Create optimized GIFs | ⭐⭐ Medium |
 | `video_keyframe_extract` | Extract I-frames/keyframes | ⭐⭐ Medium |
 
-### 🎵 Audio Processing (17 samples)
+### 🎵 Audio Processing (18 samples)
 
 | Sample | Description | Difficulty |
 |--------|-------------|------------|
@@ -133,6 +133,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `audio_normalization` | Normalize audio levels (peak/LUFS) | ⭐⭐ Medium |
 | `audio_limiter` | True peak limiting with lookahead | ⭐⭐⭐ Advanced |
 | `audio_delay` | Delay/echo effects (simple, multi-tap, ping-pong) | ⭐⭐ Medium |
+| `audio_pitch_shift` | Pitch shifting with tempo preservation | ⭐⭐⭐ Advanced |
 
 ### 📡 Streaming (1 sample)
 
@@ -459,6 +460,27 @@ Apply delay and echo effects:
 ./audio_delay music.flac output.flac -t 120 -f 0.5
 ```
 
+### Example 13: Audio Pitch Shift
+
+Shift pitch while preserving tempo:
+
+```bash
+# Shift up 2 semitones (whole step)
+./audio_pitch_shift input.wav output.wav -s 2
+
+# Shift down 3 semitones (minor third)
+./audio_pitch_shift audio.mp3 shifted.mp3 -s -3
+
+# Shift up one octave
+./audio_pitch_shift vocal.wav higher.wav -p octave_up
+
+# Apply deep voice effect
+./audio_pitch_shift voice.wav deep.wav -p deep
+
+# Shift without preserving tempo (chipmunk effect)
+./audio_pitch_shift music.flac pitched.flac -s 5 -t
+```
+
 ## 🏗️ Project Structure
 
 ```
@@ -506,7 +528,8 @@ ffmpeg_samples/
 │   │   ├── audio_splitter.cpp
 │   │   ├── audio_normalization.cpp
 │   │   ├── audio_limiter.cpp
-│   │   └── audio_delay.cpp
+│   │   ├── audio_delay.cpp
+│   │   └── audio_pitch_shift.cpp
 │   └── streaming/
 │       └── streaming_server.cpp
 ├── docs/                    # Documentation
