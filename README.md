@@ -1,6 +1,6 @@
 # FFmpeg Multimedia Processing Samples
 
-A comprehensive collection of **35 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
+A comprehensive collection of **36 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
 
 ## 🌟 What is this?
 
@@ -12,6 +12,7 @@ This project provides ready-to-use examples for common multimedia tasks:
 - Apply audio compression and effects
 - Generate thumbnails and waveforms
 - Split audio by silence detection
+- Normalize audio levels (peak/loudness)
 - And much more!
 
 ## ✨ Key Features
@@ -19,7 +20,7 @@ This project provides ready-to-use examples for common multimedia tasks:
 - **🎓 Beginner Friendly** - Clear examples with detailed comments
 - **⚡ Modern C++20** - Uses latest C++ features (RAII, smart pointers, std::format)
 - **🛡️ Safe & Robust** - Automatic memory management, proper error handling
-- **📚 35 Complete Samples** - Covering video, audio, and streaming
+- **📚 36 Complete Samples** - Covering video, audio, and streaming
 - **🌍 Bilingual Docs** - Full documentation in English and Korean
 - **🔧 Production Ready** - Battle-tested code you can use in real projects
 
@@ -110,7 +111,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `video_gif_creator` | Create optimized GIFs | ⭐⭐ Medium |
 | `video_keyframe_extract` | Extract I-frames/keyframes | ⭐⭐ Medium |
 
-### 🎵 Audio Processing (14 samples)
+### 🎵 Audio Processing (15 samples)
 
 | Sample | Description | Difficulty |
 |--------|-------------|------------|
@@ -128,6 +129,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `audio_waveform` | Create waveform visualization | ⭐⭐ Medium |
 | `audio_compressor` | Dynamic range compression | ⭐⭐⭐ Advanced |
 | `audio_splitter` | Split audio by silence detection | ⭐⭐ Medium |
+| `audio_normalization` | Normalize audio levels (peak/LUFS) | ⭐⭐ Medium |
 
 ### 📡 Streaming (1 sample)
 
@@ -388,6 +390,27 @@ Split audio files based on silence detection:
 ./audio_splitter audio.mp3 -t -50 -s 0.3 -m 2.0 -o segments -p segment
 ```
 
+### Example 10: Audio Normalization
+
+Normalize audio levels for consistent loudness:
+
+```bash
+# Peak normalization to -1dB
+./audio_normalization input.wav output.wav
+
+# Loudness normalization for podcast
+./audio_normalization audio.mp3 normalized.mp3 -m loudness -l -16
+
+# Broadcast standard (EBU R128)
+./audio_normalization podcast.wav output.wav -m loudness -l -23 -t -1.5
+
+# Two-pass peak normalization
+./audio_normalization music.flac output.flac -m peak -l -0.1 -d
+
+# RMS normalization with statistics
+./audio_normalization audio.wav out.wav -m rms -l -20 -s
+```
+
 ## 🏗️ Project Structure
 
 ```
@@ -432,7 +455,8 @@ ffmpeg_samples/
 │   │   ├── audio_silence_detect.cpp
 │   │   ├── audio_waveform.cpp
 │   │   ├── audio_compressor.cpp
-│   │   └── audio_splitter.cpp
+│   │   ├── audio_splitter.cpp
+│   │   └── audio_normalization.cpp
 │   └── streaming/
 │       └── streaming_server.cpp
 ├── docs/                    # Documentation
