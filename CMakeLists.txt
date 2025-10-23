@@ -118,6 +118,9 @@ target_link_libraries(audio_equalizer ${FFMPEG_LIBRARIES})
 add_executable(audio_transition src/audio/audio_transition.cpp)
 target_link_libraries(audio_transition ${FFMPEG_LIBRARIES})
 
+add_executable(audio_silence_detect src/audio/audio_silence_detect.cpp)
+target_link_libraries(audio_silence_detect ${FFMPEG_LIBRARIES})
+
 # Install targets
 install(TARGETS
     video_info video_decoder video_encoder video_transcoder video_filter
@@ -126,5 +129,6 @@ install(TARGETS
     video_concatenate subtitle_generator video_reverse video_crop_rotate streaming_server
     audio_info audio_decoder audio_encoder audio_resampler audio_mixer
     audio_noise_reduction audio_format_converter audio_spectrum audio_equalizer audio_transition
+    audio_silence_detect
     RUNTIME DESTINATION bin
 )
