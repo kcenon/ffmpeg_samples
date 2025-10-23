@@ -103,12 +103,15 @@ target_link_libraries(audio_spectrum ${FFMPEG_LIBRARIES})
 add_executable(audio_equalizer src/audio/audio_equalizer.cpp)
 target_link_libraries(audio_equalizer ${FFMPEG_LIBRARIES})
 
+add_executable(audio_transition src/audio/audio_transition.cpp)
+target_link_libraries(audio_transition ${FFMPEG_LIBRARIES})
+
 # Install targets
 install(TARGETS
     video_info video_decoder video_encoder video_transcoder video_filter
     video_thumbnail video_metadata video_subtitles video_watermark
     video_splitter video_slideshow video_stabilization video_transition streaming_server
     audio_info audio_decoder audio_encoder audio_resampler audio_mixer
-    audio_noise_reduction audio_format_converter audio_spectrum audio_equalizer
+    audio_noise_reduction audio_format_converter audio_spectrum audio_equalizer audio_transition
     RUNTIME DESTINATION bin
 )

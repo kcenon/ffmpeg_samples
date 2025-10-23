@@ -6,13 +6,13 @@ A collection of modern C++20 sample applications demonstrating various video and
 
 - ✨ **Modern C++20** - Uses RAII wrappers, std::span, std::string_view, and structured bindings
 - 🛡️ **Exception Safety** - Automatic resource management with smart pointers
-- 📚 **Comprehensive** - 23 samples covering video and audio processing
+- 📚 **Comprehensive** - 24 samples covering video and audio processing
 - 🌍 **Bilingual Docs** - Complete documentation in English and Korean
 - 🎯 **Production Ready** - Proper error handling and resource management
 
 ## Overview
 
-This project contains twenty-three sample applications that showcase different aspects of multimedia processing:
+This project contains twenty-four sample applications that showcase different aspects of multimedia processing:
 
 ### Video Samples
 1. **video_info** - Read and display video file metadata
@@ -40,6 +40,7 @@ This project contains twenty-three sample applications that showcase different a
 21. **audio_format_converter** - Convert audio files between different formats
 22. **audio_spectrum** - Create audio spectrum visualizations
 23. **audio_equalizer** - Apply multi-band equalization
+24. **audio_transition** - Apply crossfade transitions between audio clips
 
 ## Documentation
 
@@ -57,6 +58,7 @@ Comprehensive documentation is available in both English and Korean:
 
 **Audio Processing:**
 - [Audio Samples Guide](docs/en/audio_samples.md) - Complete audio processing guide
+- [Audio Transition Guide](docs/en/audio_transition.md) - Applying crossfade transitions between clips
 
 **API Reference:**
 - [FFmpeg API Reference](docs/en/ffmpeg_api.md) - Complete API documentation
@@ -73,6 +75,7 @@ Comprehensive documentation is available in both English and Korean:
 
 **오디오 처리:**
 - [오디오 샘플 가이드](docs/ko/audio_samples.md) - 완전한 오디오 처리 가이드
+- [오디오 전환 효과 가이드](docs/ko/audio_transition.md) - 클립 간 크로스페이드 전환 적용
 
 **API 참조:**
 - [FFmpeg API 참조](docs/ko/ffmpeg_api.md) - 전체 API 문서
@@ -856,7 +859,8 @@ ffmpeg_samples/
 │   │   ├── audio_noise_reduction.cpp    # Noise reduction
 │   │   ├── audio_format_converter.cpp   # Format converter
 │   │   ├── audio_spectrum.cpp      # Spectrum visualizer
-│   │   └── audio_equalizer.cpp     # Multi-band equalizer
+│   │   ├── audio_equalizer.cpp     # Multi-band equalizer
+│   │   └── audio_transition.cpp    # Crossfade transitions
 │   └── streaming/              # Streaming samples
 │       └── streaming_server.cpp    # Streaming server
 ├── include/                    # Header files
@@ -986,12 +990,13 @@ This project is intended for educational purposes. FFmpeg itself is licensed und
 
 ### Phase 4 ✅ (Completed)
 - **video_transition** - Transition effects between video clips
+- **audio_transition** - Crossfade transitions between audio clips
 - **Project restructuring** - Organized sources by category (video/audio/streaming)
 
 ## Project Completion
 
 All planned samples have been successfully implemented! This project now provides:
-- **23 comprehensive samples** covering all major multimedia processing tasks
+- **24 comprehensive samples** covering all major multimedia processing tasks
 - **Modern C++20** implementation with RAII and smart pointers
 - **Production-ready code** with proper error handling
 - **Complete documentation** in English and Korean
