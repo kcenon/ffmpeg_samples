@@ -6,13 +6,13 @@ A collection of modern C++20 sample applications demonstrating various video and
 
 - ✨ **Modern C++20** - Uses RAII wrappers, std::span, std::string_view, and structured bindings
 - 🛡️ **Exception Safety** - Automatic resource management with smart pointers
-- 📚 **Comprehensive** - 22 samples covering video and audio processing
+- 📚 **Comprehensive** - 23 samples covering video and audio processing
 - 🌍 **Bilingual Docs** - Complete documentation in English and Korean
 - 🎯 **Production Ready** - Proper error handling and resource management
 
 ## Overview
 
-This project contains twenty-two sample applications that showcase different aspects of multimedia processing:
+This project contains twenty-three sample applications that showcase different aspects of multimedia processing:
 
 ### Video Samples
 1. **video_info** - Read and display video file metadata
@@ -27,18 +27,19 @@ This project contains twenty-two sample applications that showcase different asp
 10. **video_splitter** - Split videos into segments or merge multiple videos
 11. **video_slideshow** - Create slideshows from image collections
 12. **video_stabilization** - Stabilize shaky video footage
-13. **streaming_server** - Stream videos over network protocols
+13. **video_transition** - Apply transition effects between two video clips
+14. **streaming_server** - Stream videos over network protocols
 
 ### Audio Samples
-14. **audio_info** - Read and display audio file metadata
-15. **audio_decoder** - Decode audio and save as WAV format
-16. **audio_encoder** - Generate audio tones and encode to various formats
-17. **audio_resampler** - Change audio sample rate and channel layout
-18. **audio_mixer** - Mix two audio files with volume control
-19. **audio_noise_reduction** - Apply noise reduction and audio enhancement
-20. **audio_format_converter** - Convert audio files between different formats
-21. **audio_spectrum** - Create audio spectrum visualizations
-22. **audio_equalizer** - Apply multi-band equalization
+15. **audio_info** - Read and display audio file metadata
+16. **audio_decoder** - Decode audio and save as WAV format
+17. **audio_encoder** - Generate audio tones and encode to various formats
+18. **audio_resampler** - Change audio sample rate and channel layout
+19. **audio_mixer** - Mix two audio files with volume control
+20. **audio_noise_reduction** - Apply noise reduction and audio enhancement
+21. **audio_format_converter** - Convert audio files between different formats
+22. **audio_spectrum** - Create audio spectrum visualizations
+23. **audio_equalizer** - Apply multi-band equalization
 
 ## Documentation
 
@@ -52,6 +53,7 @@ Comprehensive documentation is available in both English and Korean:
 - [Video Encoder Guide](docs/en/video_encoder.md) - Encoding videos from frames
 - [Video Transcoder Guide](docs/en/video_transcoder.md) - Converting video formats
 - [Video Filter Guide](docs/en/video_filter.md) - Applying video filters and effects
+- [Video Transition Guide](docs/en/video_transition.md) - Applying transition effects between clips
 
 **Audio Processing:**
 - [Audio Samples Guide](docs/en/audio_samples.md) - Complete audio processing guide
@@ -67,6 +69,7 @@ Comprehensive documentation is available in both English and Korean:
 - [비디오 인코더 가이드](docs/ko/video_encoder.md) - 프레임에서 비디오 인코딩
 - [비디오 트랜스코더 가이드](docs/ko/video_transcoder.md) - 비디오 포맷 변환
 - [비디오 필터 가이드](docs/ko/video_filter.md) - 비디오 필터 및 효과 적용
+- [비디오 전환 효과 가이드](docs/ko/video_transition.md) - 클립 간 전환 효과 적용
 
 **오디오 처리:**
 - [오디오 샘플 가이드](docs/ko/audio_samples.md) - 완전한 오디오 처리 가이드
@@ -830,28 +833,32 @@ ffmpeg_samples/
 ├── README.md                    # This file
 ├── .gitignore                  # Git ignore rules
 ├── src/                        # Source files
-│   ├── video_info.cpp          # Video information reader
-│   ├── video_decoder.cpp       # Video frame decoder
-│   ├── video_encoder.cpp       # Video encoder
-│   ├── video_transcoder.cpp    # Video transcoder
-│   ├── video_filter.cpp        # Video filter application
-│   ├── video_thumbnail.cpp     # Thumbnail generator
-│   ├── video_metadata.cpp      # Metadata editor
-│   ├── video_subtitles.cpp     # Subtitle processor
-│   ├── video_watermark.cpp     # Watermark processor
-│   ├── video_splitter.cpp      # Video splitter/merger
-│   ├── video_slideshow.cpp     # Slideshow generator
-│   ├── video_stabilization.cpp # Video stabilization
-│   ├── streaming_server.cpp    # Streaming server
-│   ├── audio_info.cpp          # Audio information reader
-│   ├── audio_decoder.cpp       # Audio decoder
-│   ├── audio_encoder.cpp       # Audio encoder
-│   ├── audio_resampler.cpp     # Audio resampler
-│   ├── audio_mixer.cpp         # Audio mixer
-│   ├── audio_noise_reduction.cpp    # Noise reduction
-│   ├── audio_format_converter.cpp   # Format converter
-│   ├── audio_spectrum.cpp      # Spectrum visualizer
-│   └── audio_equalizer.cpp     # Multi-band equalizer
+│   ├── video/                  # Video samples
+│   │   ├── video_info.cpp          # Video information reader
+│   │   ├── video_decoder.cpp       # Video frame decoder
+│   │   ├── video_encoder.cpp       # Video encoder
+│   │   ├── video_transcoder.cpp    # Video transcoder
+│   │   ├── video_filter.cpp        # Video filter application
+│   │   ├── video_thumbnail.cpp     # Thumbnail generator
+│   │   ├── video_metadata.cpp      # Metadata editor
+│   │   ├── video_subtitles.cpp     # Subtitle processor
+│   │   ├── video_watermark.cpp     # Watermark processor
+│   │   ├── video_splitter.cpp      # Video splitter/merger
+│   │   ├── video_slideshow.cpp     # Slideshow generator
+│   │   ├── video_stabilization.cpp # Video stabilization
+│   │   └── video_transition.cpp    # Transition effects
+│   ├── audio/                  # Audio samples
+│   │   ├── audio_info.cpp          # Audio information reader
+│   │   ├── audio_decoder.cpp       # Audio decoder
+│   │   ├── audio_encoder.cpp       # Audio encoder
+│   │   ├── audio_resampler.cpp     # Audio resampler
+│   │   ├── audio_mixer.cpp         # Audio mixer
+│   │   ├── audio_noise_reduction.cpp    # Noise reduction
+│   │   ├── audio_format_converter.cpp   # Format converter
+│   │   ├── audio_spectrum.cpp      # Spectrum visualizer
+│   │   └── audio_equalizer.cpp     # Multi-band equalizer
+│   └── streaming/              # Streaming samples
+│       └── streaming_server.cpp    # Streaming server
 ├── include/                    # Header files
 │   └── ffmpeg_wrappers.hpp    # FFmpeg RAII wrappers
 ├── build/                      # Build directory (generated)
@@ -977,13 +984,18 @@ This project is intended for educational purposes. FFmpeg itself is licensed und
 - **video_stabilization** - Video stabilization
 - **streaming_server** - Basic streaming server
 
+### Phase 4 ✅ (Completed)
+- **video_transition** - Transition effects between video clips
+- **Project restructuring** - Organized sources by category (video/audio/streaming)
+
 ## Project Completion
 
 All planned samples have been successfully implemented! This project now provides:
-- **22 comprehensive samples** covering all major multimedia processing tasks
+- **23 comprehensive samples** covering all major multimedia processing tasks
 - **Modern C++20** implementation with RAII and smart pointers
 - **Production-ready code** with proper error handling
 - **Complete documentation** in English and Korean
+- **Organized structure** with categorical source folders
 
 ## Contributing
 
