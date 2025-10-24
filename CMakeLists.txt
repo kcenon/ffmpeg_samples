@@ -112,6 +112,9 @@ target_link_libraries(audio_resampler ${FFMPEG_LIBRARIES})
 add_executable(audio_mixer src/audio/audio_mixer.cpp)
 target_link_libraries(audio_mixer ${FFMPEG_LIBRARIES})
 
+add_executable(audio_mixer_advanced src/audio/audio_mixer_advanced.cpp)
+target_link_libraries(audio_mixer_advanced ${FFMPEG_LIBRARIES})
+
 add_executable(audio_noise_reduction src/audio/audio_noise_reduction.cpp)
 target_link_libraries(audio_noise_reduction ${FFMPEG_LIBRARIES})
 
@@ -154,6 +157,24 @@ target_link_libraries(audio_pitch_shift ${FFMPEG_LIBRARIES})
 add_executable(audio_beat_detector src/audio/audio_beat_detector.cpp)
 target_link_libraries(audio_beat_detector ${FFMPEG_LIBRARIES})
 
+add_executable(audio_mastering src/audio/audio_mastering.cpp)
+target_link_libraries(audio_mastering ${FFMPEG_LIBRARIES})
+
+add_executable(audio_reverse src/audio/audio_reverse.cpp)
+target_link_libraries(audio_reverse ${FFMPEG_LIBRARIES})
+
+add_executable(audio_gate src/audio/audio_gate.cpp)
+target_link_libraries(audio_gate ${FFMPEG_LIBRARIES})
+
+add_executable(audio_stereo_tool src/audio/audio_stereo_tool.cpp)
+target_link_libraries(audio_stereo_tool ${FFMPEG_LIBRARIES})
+
+add_executable(audio_ducking src/audio/audio_ducking.cpp)
+target_link_libraries(audio_ducking ${FFMPEG_LIBRARIES})
+
+add_executable(audio_phaser src/audio/audio_phaser.cpp)
+target_link_libraries(audio_phaser ${FFMPEG_LIBRARIES})
+
 # Install targets
 install(TARGETS
     video_info video_decoder video_encoder video_transcoder video_filter
@@ -161,9 +182,10 @@ install(TARGETS
     video_splitter video_slideshow video_stabilization video_transition
     video_concatenate subtitle_generator video_reverse video_crop_rotate video_speed_control
     video_gif_creator video_keyframe_extract streaming_server
-    audio_info audio_decoder audio_encoder audio_resampler audio_mixer
+    audio_info audio_decoder audio_encoder audio_resampler audio_mixer audio_mixer_advanced
     audio_noise_reduction audio_format_converter audio_spectrum audio_equalizer audio_transition
     audio_silence_detect audio_waveform audio_compressor audio_splitter audio_normalization
-    audio_limiter audio_delay audio_pitch_shift audio_beat_detector
+    audio_limiter audio_delay audio_pitch_shift audio_beat_detector audio_mastering audio_reverse
+    audio_gate audio_stereo_tool audio_ducking audio_phaser
     RUNTIME DESTINATION bin
 )

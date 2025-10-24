@@ -1,6 +1,6 @@
 # FFmpeg Multimedia Processing Samples
 
-A comprehensive collection of **40 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
+A comprehensive collection of **47 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
 
 ## 🌟 What is this?
 
@@ -21,7 +21,7 @@ This project provides ready-to-use examples for common multimedia tasks:
 - **🎓 Beginner Friendly** - Clear examples with detailed comments
 - **⚡ Modern C++20** - Uses latest C++ features (RAII, smart pointers, std::format)
 - **🛡️ Safe & Robust** - Automatic memory management, proper error handling
-- **📚 40 Complete Samples** - Covering video, audio, and streaming
+- **📚 47 Complete Samples** - Covering video, audio, and streaming
 - **🌍 Bilingual Docs** - Full documentation in English and Korean
 - **🔧 Production Ready** - Battle-tested code you can use in real projects
 
@@ -112,7 +112,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `video_gif_creator` | Create optimized GIFs | ⭐⭐ Medium |
 | `video_keyframe_extract` | Extract I-frames/keyframes | ⭐⭐ Medium |
 
-### 🎵 Audio Processing (19 samples)
+### 🎵 Audio Processing (26 samples)
 
 | Sample | Description | Difficulty |
 |--------|-------------|------------|
@@ -121,6 +121,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `audio_encoder` | Generate audio tones | ⭐⭐ Medium |
 | `audio_resampler` | Change sample rate/channels | ⭐⭐ Medium |
 | `audio_mixer` | Mix multiple audio files | ⭐⭐ Medium |
+| `audio_mixer_advanced` | Multi-track mixing with pan, offset, and fades | ⭐⭐⭐ Advanced |
 | `audio_noise_reduction` | Remove background noise | ⭐⭐⭐ Advanced |
 | `audio_format_converter` | Convert audio formats | ⭐ Easy |
 | `audio_spectrum` | Create spectrum visualization | ⭐⭐ Medium |
@@ -135,6 +136,12 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `audio_delay` | Delay/echo effects (simple, multi-tap, ping-pong) | ⭐⭐ Medium |
 | `audio_pitch_shift` | Pitch shifting with tempo preservation | ⭐⭐⭐ Advanced |
 | `audio_beat_detector` | BPM detection and beat timestamp extraction | ⭐⭐⭐ Advanced |
+| `audio_mastering` | Complete mastering chain (EQ, compression, limiting) | ⭐⭐⭐⭐ Expert |
+| `audio_reverse` | Reverse audio playback | ⭐ Easy |
+| `audio_gate` | Noise gate for removing background noise | ⭐⭐ Medium |
+| `audio_stereo_tool` | Stereo manipulation (width, swap, M/S processing) | ⭐⭐ Medium |
+| `audio_ducking` | Automatic volume ducking (sidechain compression) | ⭐⭐⭐ Advanced |
+| `audio_phaser` | Classic phaser effect for guitars and synths | ⭐⭐ Medium |
 
 ### 📡 Streaming (1 sample)
 
@@ -506,6 +513,160 @@ Detect beats and measure BPM in audio files:
 ./audio_beat_detector music.wav -m energy -i 0.4 -e beat_map.csv
 ```
 
+### Example 16: Advanced Multi-Track Mixing
+
+Mix multiple audio tracks with individual control:
+
+```bash
+# Mix two tracks with equal volume
+./audio_mixer_advanced output.wav -i track1.wav -i track2.wav
+
+# Mix with volume and pan control
+./audio_mixer_advanced output.wav \
+  -i vocals.wav -v 1.2 -p 0.0 \
+  -i guitar.wav -v 0.8 -p -0.5 \
+  -i bass.wav -v 1.0 -p 0.5
+
+# Mix with time offsets and fades
+./audio_mixer_advanced output.wav \
+  -i intro.wav -fi 2.0 \
+  -i main.wav -s 3.0 \
+  -i outro.wav -s 60.0 -fi 1.0 -fo 3.0
+
+# Full featured mix with auto-gain
+./audio_mixer_advanced output.wav --auto-gain \
+  -i drums.wav -v 1.0 -p 0.0 \
+  -i bass.wav -v 0.9 -p -0.2 \
+  -i guitar.wav -v 0.7 -p 0.3 -s 2.0 -fi 1.0 \
+  -i vocals.wav -v 1.1 -p 0.0 -s 4.0 -fi 0.5
+```
+
+### Example 17: Professional Audio Mastering
+
+Apply complete mastering chain:
+
+```bash
+# Master for streaming platforms (default)
+./audio_mastering input.wav output.wav
+
+# Master for CD release
+./audio_mastering music.flac mastered.flac -p cd
+
+# Master for podcast with voice optimization
+./audio_mastering podcast.wav output.wav -p podcast
+
+# Custom EQ settings
+./audio_mastering audio.wav output.wav --eq --bass -2 --mid 2 --treble 1
+
+# Custom loudness target
+./audio_mastering input.wav output.wav --target-lufs -16 --true-peak -1.5
+```
+
+### Example 18: Audio Reverse
+
+Reverse audio playback:
+
+```bash
+# Reverse entire audio file
+./audio_reverse input.wav reversed.wav
+
+# Reverse specific time range (5s to 10s)
+./audio_reverse audio.mp3 output.wav -r -s 5.0 -e 10.0
+
+# Reverse first 3.5 seconds
+./audio_reverse speech.wav backward.wav -r -s 0 -e 3.5
+```
+
+### Example 19: Noise Gate
+
+Remove background noise with gate:
+
+```bash
+# Apply default noise gate
+./audio_gate input.wav output.wav
+
+# Use vocal preset
+./audio_gate noisy_audio.mp3 clean.wav -p vocal
+
+# Custom settings
+./audio_gate recording.wav output.wav -t -35 -r 15 -a 5 -R 150
+
+# Optimize for podcast
+./audio_gate podcast.wav clean.wav -p podcast
+
+# Fast gating for drums
+./audio_gate drums.wav gated.wav -p drum
+```
+
+### Example 20: Stereo Manipulation
+
+Various stereo operations:
+
+```bash
+# Make stereo image wider
+./audio_stereo_tool stereo.wav wide.wav --width 1.5
+
+# Convert stereo to mono
+./audio_stereo_tool stereo.wav mono.wav --to-mono
+
+# Convert mono to stereo
+./audio_stereo_tool mono.wav stereo.wav --to-stereo
+
+# Swap left and right channels
+./audio_stereo_tool input.wav swapped.wav --swap
+
+# Adjust balance (30% to left)
+./audio_stereo_tool stereo.wav balanced.wav --balance -0.3
+
+# Mid/Side processing to enhance stereo
+./audio_stereo_tool music.wav enhanced.wav --mid-side --mid-gain 0 --side-gain 3
+
+# Fix phase issues
+./audio_stereo_tool stereo.wav corrected.wav --phase-invert-right
+```
+
+### Example 21: Audio Ducking (Sidechain)
+
+Automatic background music reduction:
+
+```bash
+# Basic ducking
+./audio_ducking music.wav voice.wav output.wav
+
+# Podcast preset (gentle ducking)
+./audio_ducking bgm.mp3 narration.wav output.wav -p podcast
+
+# Voiceover for video
+./audio_ducking background.wav speech.wav output.wav -p voiceover
+
+# Radio-style ducking
+./audio_ducking music.flac podcast.wav output.wav -p radio
+
+# Custom settings
+./audio_ducking music.wav voice.wav output.wav -t -25 -r 6 -a 5 -R 300
+```
+
+### Example 22: Phaser Effect
+
+Apply classic phaser effect:
+
+```bash
+# Classic 70s phaser
+./audio_phaser guitar.wav phased.wav -p classic
+
+# Fast sweeping phaser
+./audio_phaser input.wav output.wav -s 0.8 -f 0.6
+
+# Psychedelic rock sound
+./audio_phaser synth.wav phased.wav -p psychedelic
+
+# Jet plane flanging effect
+./audio_phaser music.flac phased.flac -p jet
+
+# Fast phaser with triangle LFO
+./audio_phaser audio.wav output.wav -s 1.5 --triangle
+```
+
 ## 🏗️ Project Structure
 
 ```
@@ -542,6 +703,7 @@ ffmpeg_samples/
 │   │   ├── audio_encoder.cpp
 │   │   ├── audio_resampler.cpp
 │   │   ├── audio_mixer.cpp
+│   │   ├── audio_mixer_advanced.cpp
 │   │   ├── audio_noise_reduction.cpp
 │   │   ├── audio_format_converter.cpp
 │   │   ├── audio_spectrum.cpp
@@ -555,7 +717,13 @@ ffmpeg_samples/
 │   │   ├── audio_limiter.cpp
 │   │   ├── audio_delay.cpp
 │   │   ├── audio_pitch_shift.cpp
-│   │   └── audio_beat_detector.cpp
+│   │   ├── audio_beat_detector.cpp
+│   │   ├── audio_mastering.cpp
+│   │   ├── audio_reverse.cpp
+│   │   ├── audio_gate.cpp
+│   │   ├── audio_stereo_tool.cpp
+│   │   ├── audio_ducking.cpp
+│   │   └── audio_phaser.cpp
 │   └── streaming/
 │       └── streaming_server.cpp
 ├── docs/                    # Documentation
