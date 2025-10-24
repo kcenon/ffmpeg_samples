@@ -175,6 +175,21 @@ target_link_libraries(audio_ducking ${FFMPEG_LIBRARIES})
 add_executable(audio_phaser src/audio/audio_phaser.cpp)
 target_link_libraries(audio_phaser ${FFMPEG_LIBRARIES})
 
+add_executable(audio_tremolo src/audio/audio_tremolo.cpp)
+target_link_libraries(audio_tremolo ${FFMPEG_LIBRARIES})
+
+add_executable(audio_chorus src/audio/audio_chorus.cpp)
+target_link_libraries(audio_chorus ${FFMPEG_LIBRARIES})
+
+add_executable(audio_reverb src/audio/audio_reverb.cpp)
+target_link_libraries(audio_reverb ${FFMPEG_LIBRARIES})
+
+add_executable(audio_distortion src/audio/audio_distortion.cpp)
+target_link_libraries(audio_distortion ${FFMPEG_LIBRARIES})
+
+add_executable(audio_flanger src/audio/audio_flanger.cpp)
+target_link_libraries(audio_flanger ${FFMPEG_LIBRARIES})
+
 # Install targets
 install(TARGETS
     video_info video_decoder video_encoder video_transcoder video_filter
@@ -186,6 +201,7 @@ install(TARGETS
     audio_noise_reduction audio_format_converter audio_spectrum audio_equalizer audio_transition
     audio_silence_detect audio_waveform audio_compressor audio_splitter audio_normalization
     audio_limiter audio_delay audio_pitch_shift audio_beat_detector audio_mastering audio_reverse
-    audio_gate audio_stereo_tool audio_ducking audio_phaser
+    audio_gate audio_stereo_tool audio_ducking audio_phaser audio_tremolo audio_chorus audio_reverb
+    audio_distortion audio_flanger
     RUNTIME DESTINATION bin
 )
