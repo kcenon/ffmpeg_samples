@@ -8,6 +8,7 @@
 #include "ffmpeg_wrappers.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <format>
 #include <filesystem>
 #include <vector>
