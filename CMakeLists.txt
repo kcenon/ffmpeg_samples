@@ -31,177 +31,73 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
-# Video sample executables
-add_executable(video_info src/video/video_info.cpp)
-target_link_libraries(video_info ${FFMPEG_LIBRARIES})
+# Function to add sample executables
+function(add_sample_executable sample_file)
+    get_filename_component(sample_name ${sample_file} NAME_WE)
+    add_executable(${sample_name} ${sample_file})
+    target_link_libraries(${sample_name} ${FFMPEG_LIBRARIES})
+    list(APPEND SAMPLE_TARGETS ${sample_name})
+    set(SAMPLE_TARGETS ${SAMPLE_TARGETS} PARENT_SCOPE)
+endfunction()
 
-add_executable(video_decoder src/video/video_decoder.cpp)
-target_link_libraries(video_decoder ${FFMPEG_LIBRARIES})
+# Automatically find and add all sample executables
+set(SAMPLE_TARGETS "")
 
-add_executable(video_encoder src/video/video_encoder.cpp)
-target_link_libraries(video_encoder ${FFMPEG_LIBRARIES})
+# Video samples
+file(GLOB VIDEO_SAMPLES src/video/*.cpp)
+list(LENGTH VIDEO_SAMPLES VIDEO_COUNT)
+foreach(sample ${VIDEO_SAMPLES})
+    add_sample_executable(${sample})
+endforeach()
 
-add_executable(video_transcoder src/video/video_transcoder.cpp)
-target_link_libraries(video_transcoder ${FFMPEG_LIBRARIES})
+# Audio samples
+file(GLOB AUDIO_SAMPLES src/audio/*.cpp)
+list(LENGTH AUDIO_SAMPLES AUDIO_COUNT)
+foreach(sample ${AUDIO_SAMPLES})
+    add_sample_executable(${sample})
+endforeach()
 
-add_executable(video_filter src/video/video_filter.cpp)
-target_link_libraries(video_filter ${FFMPEG_LIBRARIES})
+# Streaming samples
+file(GLOB STREAMING_SAMPLES src/streaming/*.cpp)
+list(LENGTH STREAMING_SAMPLES STREAMING_COUNT)
+foreach(sample ${STREAMING_SAMPLES})
+    add_sample_executable(${sample})
+endforeach()
 
-add_executable(video_thumbnail src/video/video_thumbnail.cpp)
-target_link_libraries(video_thumbnail ${FFMPEG_LIBRARIES})
+# Calculate total
+math(EXPR TOTAL_SAMPLES "${VIDEO_COUNT} + ${AUDIO_COUNT} + ${STREAMING_COUNT}")
 
-add_executable(video_metadata src/video/video_metadata.cpp)
-target_link_libraries(video_metadata ${FFMPEG_LIBRARIES})
+# Print summary
+message(STATUS "Found ${VIDEO_COUNT} video samples")
+message(STATUS "Found ${AUDIO_COUNT} audio samples")
+message(STATUS "Found ${STREAMING_COUNT} streaming samples")
+message(STATUS "Total: ${TOTAL_SAMPLES} samples")
 
-add_executable(video_subtitles src/video/video_subtitles.cpp)
-target_link_libraries(video_subtitles ${FFMPEG_LIBRARIES})
-
-add_executable(video_watermark src/video/video_watermark.cpp)
-target_link_libraries(video_watermark ${FFMPEG_LIBRARIES})
-
-add_executable(video_splitter src/video/video_splitter.cpp)
-target_link_libraries(video_splitter ${FFMPEG_LIBRARIES})
-
-add_executable(video_slideshow src/video/video_slideshow.cpp)
-target_link_libraries(video_slideshow ${FFMPEG_LIBRARIES})
-
-add_executable(video_stabilization src/video/video_stabilization.cpp)
-target_link_libraries(video_stabilization ${FFMPEG_LIBRARIES})
-
-add_executable(video_transition src/video/video_transition.cpp)
-target_link_libraries(video_transition ${FFMPEG_LIBRARIES})
-
-add_executable(video_concatenate src/video/video_concatenate.cpp)
-target_link_libraries(video_concatenate ${FFMPEG_LIBRARIES})
-
-add_executable(subtitle_generator src/video/subtitle_generator.cpp)
-target_link_libraries(subtitle_generator ${FFMPEG_LIBRARIES})
-
-add_executable(video_reverse src/video/video_reverse.cpp)
-target_link_libraries(video_reverse ${FFMPEG_LIBRARIES})
-
-add_executable(video_crop_rotate src/video/video_crop_rotate.cpp)
-target_link_libraries(video_crop_rotate ${FFMPEG_LIBRARIES})
-
-add_executable(video_speed_control src/video/video_speed_control.cpp)
-target_link_libraries(video_speed_control ${FFMPEG_LIBRARIES})
-
-add_executable(video_gif_creator src/video/video_gif_creator.cpp)
-target_link_libraries(video_gif_creator ${FFMPEG_LIBRARIES})
-
-add_executable(video_keyframe_extract src/video/video_keyframe_extract.cpp)
-target_link_libraries(video_keyframe_extract ${FFMPEG_LIBRARIES})
-
-# Streaming sample executables
-add_executable(streaming_server src/streaming/streaming_server.cpp)
-target_link_libraries(streaming_server ${FFMPEG_LIBRARIES})
-
-# Audio sample executables
-add_executable(audio_info src/audio/audio_info.cpp)
-target_link_libraries(audio_info ${FFMPEG_LIBRARIES})
-
-add_executable(audio_decoder src/audio/audio_decoder.cpp)
-target_link_libraries(audio_decoder ${FFMPEG_LIBRARIES})
-
-add_executable(audio_encoder src/audio/audio_encoder.cpp)
-target_link_libraries(audio_encoder ${FFMPEG_LIBRARIES})
-
-add_executable(audio_resampler src/audio/audio_resampler.cpp)
-target_link_libraries(audio_resampler ${FFMPEG_LIBRARIES})
-
-add_executable(audio_mixer src/audio/audio_mixer.cpp)
-target_link_libraries(audio_mixer ${FFMPEG_LIBRARIES})
-
-add_executable(audio_mixer_advanced src/audio/audio_mixer_advanced.cpp)
-target_link_libraries(audio_mixer_advanced ${FFMPEG_LIBRARIES})
-
-add_executable(audio_noise_reduction src/audio/audio_noise_reduction.cpp)
-target_link_libraries(audio_noise_reduction ${FFMPEG_LIBRARIES})
-
-add_executable(audio_format_converter src/audio/audio_format_converter.cpp)
-target_link_libraries(audio_format_converter ${FFMPEG_LIBRARIES})
-
-add_executable(audio_spectrum src/audio/audio_spectrum.cpp)
-target_link_libraries(audio_spectrum ${FFMPEG_LIBRARIES})
-
-add_executable(audio_equalizer src/audio/audio_equalizer.cpp)
-target_link_libraries(audio_equalizer ${FFMPEG_LIBRARIES})
-
-add_executable(audio_transition src/audio/audio_transition.cpp)
-target_link_libraries(audio_transition ${FFMPEG_LIBRARIES})
-
-add_executable(audio_silence_detect src/audio/audio_silence_detect.cpp)
-target_link_libraries(audio_silence_detect ${FFMPEG_LIBRARIES})
-
-add_executable(audio_waveform src/audio/audio_waveform.cpp)
-target_link_libraries(audio_waveform ${FFMPEG_LIBRARIES})
-
-add_executable(audio_compressor src/audio/audio_compressor.cpp)
-target_link_libraries(audio_compressor ${FFMPEG_LIBRARIES})
-
-add_executable(audio_splitter src/audio/audio_splitter.cpp)
-target_link_libraries(audio_splitter ${FFMPEG_LIBRARIES})
-
-add_executable(audio_normalization src/audio/audio_normalization.cpp)
-target_link_libraries(audio_normalization ${FFMPEG_LIBRARIES})
-
-add_executable(audio_limiter src/audio/audio_limiter.cpp)
-target_link_libraries(audio_limiter ${FFMPEG_LIBRARIES})
-
-add_executable(audio_delay src/audio/audio_delay.cpp)
-target_link_libraries(audio_delay ${FFMPEG_LIBRARIES})
-
-add_executable(audio_pitch_shift src/audio/audio_pitch_shift.cpp)
-target_link_libraries(audio_pitch_shift ${FFMPEG_LIBRARIES})
-
-add_executable(audio_beat_detector src/audio/audio_beat_detector.cpp)
-target_link_libraries(audio_beat_detector ${FFMPEG_LIBRARIES})
-
-add_executable(audio_mastering src/audio/audio_mastering.cpp)
-target_link_libraries(audio_mastering ${FFMPEG_LIBRARIES})
-
-add_executable(audio_reverse src/audio/audio_reverse.cpp)
-target_link_libraries(audio_reverse ${FFMPEG_LIBRARIES})
-
-add_executable(audio_gate src/audio/audio_gate.cpp)
-target_link_libraries(audio_gate ${FFMPEG_LIBRARIES})
-
-add_executable(audio_stereo_tool src/audio/audio_stereo_tool.cpp)
-target_link_libraries(audio_stereo_tool ${FFMPEG_LIBRARIES})
-
-add_executable(audio_ducking src/audio/audio_ducking.cpp)
-target_link_libraries(audio_ducking ${FFMPEG_LIBRARIES})
-
-add_executable(audio_phaser src/audio/audio_phaser.cpp)
-target_link_libraries(audio_phaser ${FFMPEG_LIBRARIES})
-
-add_executable(audio_tremolo src/audio/audio_tremolo.cpp)
-target_link_libraries(audio_tremolo ${FFMPEG_LIBRARIES})
-
-add_executable(audio_chorus src/audio/audio_chorus.cpp)
-target_link_libraries(audio_chorus ${FFMPEG_LIBRARIES})
-
-add_executable(audio_reverb src/audio/audio_reverb.cpp)
-target_link_libraries(audio_reverb ${FFMPEG_LIBRARIES})
-
-add_executable(audio_distortion src/audio/audio_distortion.cpp)
-target_link_libraries(audio_distortion ${FFMPEG_LIBRARIES})
-
-add_executable(audio_flanger src/audio/audio_flanger.cpp)
-target_link_libraries(audio_flanger ${FFMPEG_LIBRARIES})
-
-# Install targets
-install(TARGETS
-    video_info video_decoder video_encoder video_transcoder video_filter
-    video_thumbnail video_metadata video_subtitles video_watermark
-    video_splitter video_slideshow video_stabilization video_transition
-    video_concatenate subtitle_generator video_reverse video_crop_rotate video_speed_control
-    video_gif_creator video_keyframe_extract streaming_server
-    audio_info audio_decoder audio_encoder audio_resampler audio_mixer audio_mixer_advanced
-    audio_noise_reduction audio_format_converter audio_spectrum audio_equalizer audio_transition
-    audio_silence_detect audio_waveform audio_compressor audio_splitter audio_normalization
-    audio_limiter audio_delay audio_pitch_shift audio_beat_detector audio_mastering audio_reverse
-    audio_gate audio_stereo_tool audio_ducking audio_phaser audio_tremolo audio_chorus audio_reverb
-    audio_distortion audio_flanger
+# Install all targets
+install(TARGETS ${SAMPLE_TARGETS}
     RUNTIME DESTINATION bin
 )
+
+# Optional: Enable testing
+option(BUILD_TESTING "Build tests" OFF)
+if(BUILD_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
+# Optional: Enable benchmarks
+option(BUILD_BENCHMARKS "Build performance benchmarks" OFF)
+if(BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif()
+
+# Print build configuration
+message(STATUS "========================================")
+message(STATUS "FFmpeg Samples Build Configuration")
+message(STATUS "========================================")
+message(STATUS "C++ Standard: C++${CMAKE_CXX_STANDARD}")
+message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Install Prefix: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "Testing: ${BUILD_TESTING}")
+message(STATUS "Benchmarks: ${BUILD_BENCHMARKS}")
+message(STATUS "========================================")
