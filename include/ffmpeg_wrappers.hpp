@@ -18,6 +18,7 @@ extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavutil/avutil.h>
 #include <libavutil/imgutils.h>
+#include <libavutil/opt.h>
 #include <libavfilter/avfilter.h>
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
@@ -125,7 +126,7 @@ private:
 };
 
 // Helper functions
-inline void check_error(int ret, std::string_view operation) {
+inline void check_error(int ret, [[maybe_unused]] std::string_view operation) {
     if (ret < 0) {
         throw FFmpegError(ret);
     }

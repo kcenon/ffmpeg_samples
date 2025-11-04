@@ -234,6 +234,7 @@ private:
         return total_flushed;
     }
 
+public:
     ~AudioDecoder() {
         if (dst_data_) {
             av_freep(&dst_data_[0]);
@@ -241,6 +242,7 @@ private:
         }
     }
 
+private:
     fs::path output_file_;
     int audio_stream_index_ = -1;
     int out_sample_rate_ = 44100;

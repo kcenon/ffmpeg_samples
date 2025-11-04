@@ -1,6 +1,6 @@
 # FFmpeg Multimedia Processing Samples
 
-A comprehensive collection of **47 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
+A comprehensive collection of **52 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
 
 ## 🌟 What is this?
 
@@ -21,9 +21,10 @@ This project provides ready-to-use examples for common multimedia tasks:
 - **🎓 Beginner Friendly** - Clear examples with detailed comments
 - **⚡ Modern C++20** - Uses latest C++ features (RAII, smart pointers, std::format)
 - **🛡️ Safe & Robust** - Automatic memory management, proper error handling
-- **📚 47 Complete Samples** - Covering video, audio, and streaming
+- **📚 52 Complete Samples** - Covering video, audio, and streaming
 - **🌍 Bilingual Docs** - Full documentation in English and Korean
 - **🔧 Production Ready** - Battle-tested code you can use in real projects
+- **🔄 Auto-Discovery** - CMake automatically detects and builds all samples
 
 ## 📋 Table of Contents
 
@@ -112,7 +113,7 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `video_gif_creator` | Create optimized GIFs | ⭐⭐ Medium |
 | `video_keyframe_extract` | Extract I-frames/keyframes | ⭐⭐ Medium |
 
-### 🎵 Audio Processing (26 samples)
+### 🎵 Audio Processing (31 samples)
 
 | Sample | Description | Difficulty |
 |--------|-------------|------------|
@@ -142,6 +143,11 @@ make -j$(nproc)  # Use all CPU cores for faster build
 | `audio_stereo_tool` | Stereo manipulation (width, swap, M/S processing) | ⭐⭐ Medium |
 | `audio_ducking` | Automatic volume ducking (sidechain compression) | ⭐⭐⭐ Advanced |
 | `audio_phaser` | Classic phaser effect for guitars and synths | ⭐⭐ Medium |
+| `audio_tremolo` | Tremolo/vibrato amplitude modulation effect | ⭐⭐ Medium |
+| `audio_chorus` | Chorus effect with multiple delayed voices | ⭐⭐ Medium |
+| `audio_reverb` | Reverb/room simulation effects | ⭐⭐⭐ Advanced |
+| `audio_distortion` | Distortion and overdrive effects | ⭐⭐ Medium |
+| `audio_flanger` | Jet/flanging sweep effect | ⭐⭐ Medium |
 
 ### 📡 Streaming (1 sample)
 
