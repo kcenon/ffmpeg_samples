@@ -1,0 +1,200 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main, feature/* ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    name: Build on Ubuntu
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          ffmpeg \
+          libavcodec-dev \
+          libavformat-dev \
+          libavutil-dev \
+          libavfilter-dev \
+          libswscale-dev \
+          libswresample-dev \
+          pkg-config \
+          cmake \
+          ninja-build \
+          build-essential
+
+    - name: Verify FFmpeg installation
+      run: |
+        ffmpeg -version
+        pkg-config --modversion libavcodec
+        pkg-config --modversion libavformat
+
+    - name: Configure CMake
+      run: |
+        cmake -B build -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror"
+
+    - name: Build all samples
+      run: cmake --build build --config Release
+
+    - name: Verify executables
+      run: |
+        echo "Checking built executables..."
+        ls -lh build/
+
+        # Count executables
+        EXEC_COUNT=$(find build -maxdepth 1 -type f -executable | wc -l)
+        echo "Found $EXEC_COUNT executables"
+
+        if [ "$EXEC_COUNT" -lt 50 ]; then
+          echo "ERROR: Expected at least 50 executables, found $EXEC_COUNT"
+          exit 1
+        fi
+
+        echo "✅ All samples built successfully!"
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-binaries
+        path: build/*
+        retention-days: 7
+
+  build-macos:
+    name: Build on macOS
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        brew install ffmpeg pkg-config cmake ninja
+
+    - name: Verify FFmpeg installation
+      run: |
+        ffmpeg -version
+        pkg-config --modversion libavcodec
+
+    - name: Configure CMake
+      run: |
+        cmake -B build -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror"
+
+    - name: Build all samples
+      run: cmake --build build --config Release
+
+    - name: Verify executables
+      run: |
+        echo "Checking built executables..."
+        ls -lh build/
+
+        EXEC_COUNT=$(find build -maxdepth 1 -type f -perm +111 | wc -l | tr -d ' ')
+        echo "Found $EXEC_COUNT executables"
+
+        if [ "$EXEC_COUNT" -lt 50 ]; then
+          echo "ERROR: Expected at least 50 executables, found $EXEC_COUNT"
+          exit 1
+        fi
+
+        echo "✅ All samples built successfully!"
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-binaries
+        path: build/*
+        retention-days: 7
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check file sizes
+      run: |
+        echo "Checking for large files..."
+        find . -type f -size +1M -not -path "./.git/*" -exec ls -lh {} \;
+
+    - name: Check line counts
+      run: |
+        echo "Code statistics:"
+        echo "Total .cpp files: $(find src -name '*.cpp' | wc -l)"
+        echo "Total .hpp files: $(find include -name '*.hpp' | wc -l)"
+        echo "Total lines in src: $(find src -name '*.cpp' -exec wc -l {} + | tail -1)"
+        echo "Total lines in include: $(find include -name '*.hpp' -exec wc -l {} + | tail -1)"
+
+    - name: Check for common issues
+      run: |
+        echo "Checking for TODO/FIXME comments..."
+        grep -r "TODO\|FIXME" src/ include/ || echo "No TODOs found"
+
+        echo "Checking for debugging statements..."
+        grep -r "std::cout.*DEBUG\|printf.*DEBUG" src/ || echo "No debug prints found"
+
+  documentation:
+    name: Documentation Check
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Verify documentation
+      run: |
+        echo "Checking documentation files..."
+
+        # Check README exists and has content
+        if [ ! -f README.md ]; then
+          echo "ERROR: README.md not found"
+          exit 1
+        fi
+
+        README_LINES=$(wc -l < README.md)
+        echo "README.md: $README_LINES lines"
+
+        if [ "$README_LINES" -lt 100 ]; then
+          echo "ERROR: README.md seems too short"
+          exit 1
+        fi
+
+        # Check for bilingual docs
+        EN_DOCS=$(find docs/en -name '*.md' 2>/dev/null | wc -l)
+        KO_DOCS=$(find docs/ko -name '*.md' 2>/dev/null | wc -l)
+
+        echo "English docs: $EN_DOCS"
+        echo "Korean docs: $KO_DOCS"
+
+        echo "✅ Documentation check passed!"
+
+    - name: Check sample count consistency
+      run: |
+        # Count actual samples
+        ACTUAL_SAMPLES=$(find src -name '*.cpp' | wc -l)
+        echo "Actual samples in src/: $ACTUAL_SAMPLES"
+
+        # Extract claimed count from README
+        README_COUNT=$(grep -oP 'collection of \*\*\K[0-9]+' README.md | head -1)
+        echo "README claims: $README_COUNT samples"
+
+        if [ "$ACTUAL_SAMPLES" != "$README_COUNT" ]; then
+          echo "WARNING: Sample count mismatch!"
+          echo "Please update README.md to reflect $ACTUAL_SAMPLES samples"
+        else
+          echo "✅ Sample count matches!"
+        fi
