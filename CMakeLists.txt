@@ -27,7 +27,10 @@ include_directories(
 link_directories(${FFMPEG_LIBRARY_DIRS})
 
 # Compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+# Note: Warning flags are set via CMAKE_CXX_FLAGS from command line or defaults
+if(NOT CMAKE_CXX_FLAGS)
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+endif()
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 

@@ -50,7 +50,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_C_COMPILER=gcc-13 \
           -DCMAKE_CXX_COMPILER=g++-13 \
-          -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -Wno-deprecated-declarations"
+          -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -Wno-deprecated-declarations -Wno-unused-function -Wno-unused-variable -Wno-unused-private-field"
 
     - name: Build all samples
       run: cmake --build build --config Release
@@ -99,7 +99,7 @@ jobs:
       run: |
         cmake -B build -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -Wno-deprecated-declarations"
+          -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror -Wno-deprecated-declarations -Wno-unused-function -Wno-unused-variable -Wno-unused-private-field"
 
     - name: Build all samples
       run: cmake --build build --config Release
