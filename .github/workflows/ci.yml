@@ -19,6 +19,9 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
+        sudo apt-get install -y software-properties-common
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+        sudo apt-get update
         sudo apt-get install -y \
           ffmpeg \
           libavcodec-dev \
@@ -30,18 +33,23 @@ jobs:
           pkg-config \
           cmake \
           ninja-build \
-          build-essential
+          build-essential \
+          g++-13 \
+          gcc-13
 
     - name: Verify FFmpeg installation
       run: |
         ffmpeg -version
         pkg-config --modversion libavcodec
         pkg-config --modversion libavformat
+        g++-13 --version
 
     - name: Configure CMake
       run: |
         cmake -B build -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER=gcc-13 \
+          -DCMAKE_CXX_COMPILER=g++-13 \
           -DCMAKE_CXX_FLAGS="-Wall -Wextra -Werror"
 
     - name: Build all samples

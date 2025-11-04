@@ -125,7 +125,7 @@ private:
 };
 
 // Helper functions
-inline void check_error(int ret, std::string_view operation) {
+inline void check_error(int ret, [[maybe_unused]] std::string_view operation) {
     if (ret < 0) {
         throw FFmpegError(ret);
     }
