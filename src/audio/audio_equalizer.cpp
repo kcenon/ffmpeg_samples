@@ -7,14 +7,13 @@
 
 #include "ffmpeg_wrappers.hpp"
 
-#include <iostream>
-#include <fstream>
-#include <format>
 #include <filesystem>
+#include <format>
+#include <fstream>
+#include <iostream>
 #include <string_view>
-#include <vector>
 #include <unordered_map>
-#include <algorithm>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -22,518 +21,515 @@ namespace {
 
 // WAV header structure
 struct WAVHeader {
-    char riff_header[4] = {'R', 'I', 'F', 'F'};
-    uint32_t wav_size;
-    char wave_header[4] = {'W', 'A', 'V', 'E'};
-    char fmt_header[4] = {'f', 'm', 't', ' '};
-    uint32_t fmt_chunk_size = 16;
-    uint16_t audio_format = 1;
-    uint16_t num_channels;
-    uint32_t sample_rate;
-    uint32_t byte_rate;
-    uint16_t block_align;
-    uint16_t bits_per_sample;
-    char data_header[4] = {'d', 'a', 't', 'a'};
-    uint32_t data_bytes;
+  char riff_header[4] = {'R', 'I', 'F', 'F'};
+  uint32_t wav_size;
+  char wave_header[4] = {'W', 'A', 'V', 'E'};
+  char fmt_header[4] = {'f', 'm', 't', ' '};
+  uint32_t fmt_chunk_size = 16;
+  uint16_t audio_format = 1;
+  uint16_t num_channels;
+  uint32_t sample_rate;
+  uint32_t byte_rate;
+  uint16_t block_align;
+  uint16_t bits_per_sample;
+  char data_header[4] = {'d', 'a', 't', 'a'};
+  uint32_t data_bytes;
 };
 
-void write_wav_header(std::ofstream& file, int sample_rate, int channels, uint32_t data_size) {
-    WAVHeader header;
-    header.num_channels = static_cast<uint16_t>(channels);
-    header.sample_rate = static_cast<uint32_t>(sample_rate);
-    header.bits_per_sample = 16;
-    header.byte_rate = static_cast<uint32_t>(sample_rate * channels * 2);
-    header.block_align = static_cast<uint16_t>(channels * 2);
-    header.data_bytes = data_size;
-    header.wav_size = 36 + data_size;
+void write_wav_header(std::ofstream &file, int sample_rate, int channels,
+                      uint32_t data_size) {
+  WAVHeader header;
+  header.num_channels = static_cast<uint16_t>(channels);
+  header.sample_rate = static_cast<uint32_t>(sample_rate);
+  header.bits_per_sample = 16;
+  header.byte_rate = static_cast<uint32_t>(sample_rate * channels * 2);
+  header.block_align = static_cast<uint16_t>(channels * 2);
+  header.data_bytes = data_size;
+  header.wav_size = 36 + data_size;
 
-    file.write(reinterpret_cast<const char*>(&header), sizeof(WAVHeader));
+  file.write(reinterpret_cast<const char *>(&header), sizeof(WAVHeader));
 }
 
 struct EqualizerBand {
-    int frequency;
-    float gain_db;
-    int width;
+  int frequency;
+  float gain_db;
+  int width;
 };
 
 std::string get_equalizer_preset(std::string_view preset_name) {
-    static const std::unordered_map<std::string_view, std::string> presets = {
-        {"flat", "equalizer=f=32:t=q:w=1:g=0,equalizer=f=64:t=q:w=1:g=0,"
-                 "equalizer=f=125:t=q:w=1:g=0,equalizer=f=250:t=q:w=1:g=0,"
-                 "equalizer=f=500:t=q:w=1:g=0,equalizer=f=1000:t=q:w=1:g=0,"
-                 "equalizer=f=2000:t=q:w=1:g=0,equalizer=f=4000:t=q:w=1:g=0,"
-                 "equalizer=f=8000:t=q:w=1:g=0,equalizer=f=16000:t=q:w=1:g=0"},
+  static const std::unordered_map<std::string_view, std::string> presets = {
+      {"flat", "equalizer=f=32:t=q:w=1:g=0,equalizer=f=64:t=q:w=1:g=0,"
+               "equalizer=f=125:t=q:w=1:g=0,equalizer=f=250:t=q:w=1:g=0,"
+               "equalizer=f=500:t=q:w=1:g=0,equalizer=f=1000:t=q:w=1:g=0,"
+               "equalizer=f=2000:t=q:w=1:g=0,equalizer=f=4000:t=q:w=1:g=0,"
+               "equalizer=f=8000:t=q:w=1:g=0,equalizer=f=16000:t=q:w=1:g=0"},
 
-        {"bass_boost", "equalizer=f=32:t=q:w=1:g=8,equalizer=f=64:t=q:w=1:g=6,"
-                      "equalizer=f=125:t=q:w=1:g=4,equalizer=f=250:t=q:w=1:g=2,"
-                      "equalizer=f=500:t=q:w=1:g=0,equalizer=f=1000:t=q:w=1:g=0,"
-                      "equalizer=f=2000:t=q:w=1:g=0,equalizer=f=4000:t=q:w=1:g=0,"
-                      "equalizer=f=8000:t=q:w=1:g=0,equalizer=f=16000:t=q:w=1:g=0"},
+      {"bass_boost",
+       "equalizer=f=32:t=q:w=1:g=8,equalizer=f=64:t=q:w=1:g=6,"
+       "equalizer=f=125:t=q:w=1:g=4,equalizer=f=250:t=q:w=1:g=2,"
+       "equalizer=f=500:t=q:w=1:g=0,equalizer=f=1000:t=q:w=1:g=0,"
+       "equalizer=f=2000:t=q:w=1:g=0,equalizer=f=4000:t=q:w=1:g=0,"
+       "equalizer=f=8000:t=q:w=1:g=0,equalizer=f=16000:t=q:w=1:g=0"},
 
-        {"treble_boost", "equalizer=f=32:t=q:w=1:g=0,equalizer=f=64:t=q:w=1:g=0,"
-                        "equalizer=f=125:t=q:w=1:g=0,equalizer=f=250:t=q:w=1:g=0,"
-                        "equalizer=f=500:t=q:w=1:g=0,equalizer=f=1000:t=q:w=1:g=0,"
-                        "equalizer=f=2000:t=q:w=1:g=2,equalizer=f=4000:t=q:w=1:g=4,"
-                        "equalizer=f=8000:t=q:w=1:g=6,equalizer=f=16000:t=q:w=1:g=8"},
+      {"treble_boost",
+       "equalizer=f=32:t=q:w=1:g=0,equalizer=f=64:t=q:w=1:g=0,"
+       "equalizer=f=125:t=q:w=1:g=0,equalizer=f=250:t=q:w=1:g=0,"
+       "equalizer=f=500:t=q:w=1:g=0,equalizer=f=1000:t=q:w=1:g=0,"
+       "equalizer=f=2000:t=q:w=1:g=2,equalizer=f=4000:t=q:w=1:g=4,"
+       "equalizer=f=8000:t=q:w=1:g=6,equalizer=f=16000:t=q:w=1:g=8"},
 
-        {"vocal", "equalizer=f=32:t=q:w=1:g=-2,equalizer=f=64:t=q:w=1:g=-1,"
-                 "equalizer=f=125:t=q:w=1:g=0,equalizer=f=250:t=q:w=1:g=2,"
-                 "equalizer=f=500:t=q:w=1:g=3,equalizer=f=1000:t=q:w=1:g=4,"
-                 "equalizer=f=2000:t=q:w=1:g=4,equalizer=f=4000:t=q:w=1:g=2,"
-                 "equalizer=f=8000:t=q:w=1:g=0,equalizer=f=16000:t=q:w=1:g=-1"},
+      {"vocal", "equalizer=f=32:t=q:w=1:g=-2,equalizer=f=64:t=q:w=1:g=-1,"
+                "equalizer=f=125:t=q:w=1:g=0,equalizer=f=250:t=q:w=1:g=2,"
+                "equalizer=f=500:t=q:w=1:g=3,equalizer=f=1000:t=q:w=1:g=4,"
+                "equalizer=f=2000:t=q:w=1:g=4,equalizer=f=4000:t=q:w=1:g=2,"
+                "equalizer=f=8000:t=q:w=1:g=0,equalizer=f=16000:t=q:w=1:g=-1"},
 
-        {"classical", "equalizer=f=32:t=q:w=1:g=4,equalizer=f=64:t=q:w=1:g=3,"
-                     "equalizer=f=125:t=q:w=1:g=2,equalizer=f=250:t=q:w=1:g=1,"
-                     "equalizer=f=500:t=q:w=1:g=0,equalizer=f=1000:t=q:w=1:g=0,"
-                     "equalizer=f=2000:t=q:w=1:g=1,equalizer=f=4000:t=q:w=1:g=2,"
-                     "equalizer=f=8000:t=q:w=1:g=3,equalizer=f=16000:t=q:w=1:g=4"},
+      {"classical",
+       "equalizer=f=32:t=q:w=1:g=4,equalizer=f=64:t=q:w=1:g=3,"
+       "equalizer=f=125:t=q:w=1:g=2,equalizer=f=250:t=q:w=1:g=1,"
+       "equalizer=f=500:t=q:w=1:g=0,equalizer=f=1000:t=q:w=1:g=0,"
+       "equalizer=f=2000:t=q:w=1:g=1,equalizer=f=4000:t=q:w=1:g=2,"
+       "equalizer=f=8000:t=q:w=1:g=3,equalizer=f=16000:t=q:w=1:g=4"},
 
-        {"rock", "equalizer=f=32:t=q:w=1:g=6,equalizer=f=64:t=q:w=1:g=4,"
-                "equalizer=f=125:t=q:w=1:g=2,equalizer=f=250:t=q:w=1:g=-1,"
-                "equalizer=f=500:t=q:w=1:g=-2,equalizer=f=1000:t=q:w=1:g=-1,"
-                "equalizer=f=2000:t=q:w=1:g=1,equalizer=f=4000:t=q:w=1:g=3,"
-                "equalizer=f=8000:t=q:w=1:g=5,equalizer=f=16000:t=q:w=1:g=6"},
+      {"rock", "equalizer=f=32:t=q:w=1:g=6,equalizer=f=64:t=q:w=1:g=4,"
+               "equalizer=f=125:t=q:w=1:g=2,equalizer=f=250:t=q:w=1:g=-1,"
+               "equalizer=f=500:t=q:w=1:g=-2,equalizer=f=1000:t=q:w=1:g=-1,"
+               "equalizer=f=2000:t=q:w=1:g=1,equalizer=f=4000:t=q:w=1:g=3,"
+               "equalizer=f=8000:t=q:w=1:g=5,equalizer=f=16000:t=q:w=1:g=6"},
 
-        {"jazz", "equalizer=f=32:t=q:w=1:g=3,equalizer=f=64:t=q:w=1:g=2,"
-                "equalizer=f=125:t=q:w=1:g=1,equalizer=f=250:t=q:w=1:g=2,"
-                "equalizer=f=500:t=q:w=1:g=3,equalizer=f=1000:t=q:w=1:g=2,"
-                "equalizer=f=2000:t=q:w=1:g=1,equalizer=f=4000:t=q:w=1:g=2,"
-                "equalizer=f=8000:t=q:w=1:g=3,equalizer=f=16000:t=q:w=1:g=4"},
+      {"jazz", "equalizer=f=32:t=q:w=1:g=3,equalizer=f=64:t=q:w=1:g=2,"
+               "equalizer=f=125:t=q:w=1:g=1,equalizer=f=250:t=q:w=1:g=2,"
+               "equalizer=f=500:t=q:w=1:g=3,equalizer=f=1000:t=q:w=1:g=2,"
+               "equalizer=f=2000:t=q:w=1:g=1,equalizer=f=4000:t=q:w=1:g=2,"
+               "equalizer=f=8000:t=q:w=1:g=3,equalizer=f=16000:t=q:w=1:g=4"},
 
-        {"pop", "equalizer=f=32:t=q:w=1:g=2,equalizer=f=64:t=q:w=1:g=1,"
-               "equalizer=f=125:t=q:w=1:g=0,equalizer=f=250:t=q:w=1:g=1,"
-               "equalizer=f=500:t=q:w=1:g=2,equalizer=f=1000:t=q:w=1:g=3,"
-               "equalizer=f=2000:t=q:w=1:g=4,equalizer=f=4000:t=q:w=1:g=3,"
-               "equalizer=f=8000:t=q:w=1:g=2,equalizer=f=16000:t=q:w=1:g=1"},
+      {"pop", "equalizer=f=32:t=q:w=1:g=2,equalizer=f=64:t=q:w=1:g=1,"
+              "equalizer=f=125:t=q:w=1:g=0,equalizer=f=250:t=q:w=1:g=1,"
+              "equalizer=f=500:t=q:w=1:g=2,equalizer=f=1000:t=q:w=1:g=3,"
+              "equalizer=f=2000:t=q:w=1:g=4,equalizer=f=4000:t=q:w=1:g=3,"
+              "equalizer=f=8000:t=q:w=1:g=2,equalizer=f=16000:t=q:w=1:g=1"},
 
-        {"electronic", "equalizer=f=32:t=q:w=1:g=7,equalizer=f=64:t=q:w=1:g=5,"
-                      "equalizer=f=125:t=q:w=1:g=3,equalizer=f=250:t=q:w=1:g=1,"
-                      "equalizer=f=500:t=q:w=1:g=-1,equalizer=f=1000:t=q:w=1:g=0,"
-                      "equalizer=f=2000:t=q:w=1:g=1,equalizer=f=4000:t=q:w=1:g=3,"
-                      "equalizer=f=8000:t=q:w=1:g=5,equalizer=f=16000:t=q:w=1:g=7"},
+      {"electronic",
+       "equalizer=f=32:t=q:w=1:g=7,equalizer=f=64:t=q:w=1:g=5,"
+       "equalizer=f=125:t=q:w=1:g=3,equalizer=f=250:t=q:w=1:g=1,"
+       "equalizer=f=500:t=q:w=1:g=-1,equalizer=f=1000:t=q:w=1:g=0,"
+       "equalizer=f=2000:t=q:w=1:g=1,equalizer=f=4000:t=q:w=1:g=3,"
+       "equalizer=f=8000:t=q:w=1:g=5,equalizer=f=16000:t=q:w=1:g=7"},
 
-        {"acoustic", "equalizer=f=32:t=q:w=1:g=3,equalizer=f=64:t=q:w=1:g=2,"
-                    "equalizer=f=125:t=q:w=1:g=2,equalizer=f=250:t=q:w=1:g=1,"
-                    "equalizer=f=500:t=q:w=1:g=1,equalizer=f=1000:t=q:w=1:g=2,"
-                    "equalizer=f=2000:t=q:w=1:g=3,equalizer=f=4000:t=q:w=1:g=4,"
-                    "equalizer=f=8000:t=q:w=1:g=3,equalizer=f=16000:t=q:w=1:g=2"}
-    };
+      {"acoustic",
+       "equalizer=f=32:t=q:w=1:g=3,equalizer=f=64:t=q:w=1:g=2,"
+       "equalizer=f=125:t=q:w=1:g=2,equalizer=f=250:t=q:w=1:g=1,"
+       "equalizer=f=500:t=q:w=1:g=1,equalizer=f=1000:t=q:w=1:g=2,"
+       "equalizer=f=2000:t=q:w=1:g=3,equalizer=f=4000:t=q:w=1:g=4,"
+       "equalizer=f=8000:t=q:w=1:g=3,equalizer=f=16000:t=q:w=1:g=2"}};
 
-    const auto it = presets.find(preset_name);
-    if (it == presets.end()) {
-        throw std::invalid_argument(std::format("Unknown preset: {}", preset_name));
-    }
-    return it->second;
+  const auto it = presets.find(preset_name);
+  if (it == presets.end()) {
+    throw std::invalid_argument(std::format("Unknown preset: {}", preset_name));
+  }
+  return it->second;
 }
 
-std::string build_custom_equalizer(const std::vector<EqualizerBand>& bands) {
-    std::string filter;
+std::string build_custom_equalizer(const std::vector<EqualizerBand> &bands) {
+  std::string filter;
 
-    for (size_t i = 0; i < bands.size(); ++i) {
-        if (i > 0) {
-            filter += ",";
-        }
-        filter += std::format("equalizer=f={}:t=q:w={}:g={}",
-                            bands[i].frequency,
-                            bands[i].width,
-                            bands[i].gain_db);
+  for (size_t i = 0; i < bands.size(); ++i) {
+    if (i > 0) {
+      filter += ",";
     }
+    filter += std::format("equalizer=f={}:t=q:w={}:g={}", bands[i].frequency,
+                          bands[i].width, bands[i].gain_db);
+  }
 
-    return filter;
+  return filter;
 }
 
 class AudioEqualizer {
 public:
-    AudioEqualizer(std::string_view input_file, const fs::path& output_file,
-                  std::string_view filter_description)
-        : output_file_(output_file)
-        , filter_description_(filter_description)
-        , format_ctx_(ffmpeg::open_input_format(input_file.data()))
-        , packet_(ffmpeg::create_packet())
-        , frame_(ffmpeg::create_frame())
-        , filtered_frame_(ffmpeg::create_frame()) {
+  AudioEqualizer(std::string_view input_file, const fs::path &output_file,
+                 std::string_view filter_description)
+      : output_file_(output_file), filter_description_(filter_description),
+        format_ctx_(ffmpeg::open_input_format(input_file.data())),
+        packet_(ffmpeg::create_packet()), frame_(ffmpeg::create_frame()),
+        filtered_frame_(ffmpeg::create_frame()) {
 
-        initialize();
+    initialize();
+  }
+
+  ~AudioEqualizer() {
+    if (dst_data_) {
+      av_freep(&dst_data_[0]);
+      av_freep(&dst_data_);
+    }
+  }
+
+  void process() {
+    std::cout << "Audio Equalizer\n";
+    std::cout << "===============\n\n";
+    std::cout << std::format("Input: {}\n", format_ctx_->url);
+    std::cout << std::format("Output: {}\n", output_file_.string());
+    std::cout << std::format("Sample Rate: {} Hz\n", codec_ctx_->sample_rate);
+    std::cout << std::format("Channels: {}\n\n",
+                             codec_ctx_->ch_layout.nb_channels);
+
+    // Open output file
+    std::ofstream output_stream(output_file_, std::ios::binary);
+    if (!output_stream.is_open()) {
+      throw std::runtime_error(
+          std::format("Failed to open output file: {}", output_file_.string()));
     }
 
-    void process() {
-        std::cout << "Audio Equalizer\n";
-        std::cout << "===============\n\n";
-        std::cout << std::format("Input: {}\n", format_ctx_->url);
-        std::cout << std::format("Output: {}\n", output_file_.string());
-        std::cout << std::format("Sample Rate: {} Hz\n", codec_ctx_->sample_rate);
-        std::cout << std::format("Channels: {}\n\n", codec_ctx_->ch_layout.nb_channels);
+    // Write placeholder WAV header
+    write_wav_header(output_stream, out_sample_rate_, out_channels_, 0);
 
-        // Open output file
-        std::ofstream output_stream(output_file_, std::ios::binary);
-        if (!output_stream.is_open()) {
-            throw std::runtime_error(std::format("Failed to open output file: {}",
-                                                 output_file_.string()));
+    uint32_t total_data_size = 0;
+    int frame_count = 0;
+
+    std::cout << "Processing audio with equalizer...\n";
+
+    // Process all frames
+    while (av_read_frame(format_ctx_.get(), packet_.get()) >= 0) {
+      ffmpeg::ScopedPacketUnref packet_guard(packet_.get());
+
+      if (packet_->stream_index != audio_stream_index_) {
+        continue;
+      }
+
+      const auto ret = avcodec_send_packet(codec_ctx_.get(), packet_.get());
+      if (ret < 0) {
+        continue;
+      }
+
+      while (true) {
+        const auto recv_ret =
+            avcodec_receive_frame(codec_ctx_.get(), frame_.get());
+
+        if (recv_ret == AVERROR(EAGAIN) || recv_ret == AVERROR_EOF) {
+          break;
         }
 
-        // Write placeholder WAV header
-        write_wav_header(output_stream, out_sample_rate_, out_channels_, 0);
-
-        uint32_t total_data_size = 0;
-        int frame_count = 0;
-
-        std::cout << "Processing audio with equalizer...\n";
-
-        // Process all frames
-        while (av_read_frame(format_ctx_.get(), packet_.get()) >= 0) {
-            ffmpeg::ScopedPacketUnref packet_guard(packet_.get());
-
-            if (packet_->stream_index != audio_stream_index_) {
-                continue;
-            }
-
-            const auto ret = avcodec_send_packet(codec_ctx_.get(), packet_.get());
-            if (ret < 0) {
-                continue;
-            }
-
-            while (true) {
-                const auto recv_ret = avcodec_receive_frame(codec_ctx_.get(), frame_.get());
-
-                if (recv_ret == AVERROR(EAGAIN) || recv_ret == AVERROR_EOF) {
-                    break;
-                }
-
-                if (recv_ret < 0) {
-                    std::cerr << "Error during decoding\n";
-                    break;
-                }
-
-                ffmpeg::ScopedFrameUnref frame_guard(frame_.get());
-
-                // Push frame to filter graph
-                ffmpeg::check_error(
-                    av_buffersrc_add_frame_flags(buffersrc_ctx_, frame_.get(),
-                                               AV_BUFFERSRC_FLAG_KEEP_REF),
-                    "feed frame to filter graph"
-                );
-
-                // Pull filtered frames
-                while (true) {
-                    const auto filter_ret = av_buffersink_get_frame(buffersink_ctx_,
-                                                                   filtered_frame_.get());
-
-                    if (filter_ret == AVERROR(EAGAIN) || filter_ret == AVERROR_EOF) {
-                        break;
-                    }
-
-                    if (filter_ret < 0) {
-                        std::cerr << "Error getting filtered frame\n";
-                        break;
-                    }
-
-                    ffmpeg::ScopedFrameUnref filtered_guard(filtered_frame_.get());
-
-                    // Write filtered audio
-                    total_data_size += write_frame(output_stream);
-                    ++frame_count;
-
-                    if (frame_count % 100 == 0) {
-                        std::cout << std::format("Processed {} frames\r", frame_count) << std::flush;
-                    }
-                }
-            }
+        if (recv_ret < 0) {
+          std::cerr << "Error during decoding\n";
+          break;
         }
 
-        std::cout << std::format("\nTotal frames processed: {}\n", frame_count);
-        std::cout << std::format("Output data size: {} bytes\n", total_data_size);
+        ffmpeg::ScopedFrameUnref frame_guard(frame_.get());
 
-        // Update WAV header
-        output_stream.seekp(0, std::ios::beg);
-        write_wav_header(output_stream, out_sample_rate_, out_channels_, total_data_size);
+        // Push frame to filter graph
+        ffmpeg::check_error(
+            av_buffersrc_add_frame_flags(buffersrc_ctx_, frame_.get(),
+                                         AV_BUFFERSRC_FLAG_KEEP_REF),
+            "feed frame to filter graph");
 
-        std::cout << std::format("\n✓ Equalization completed successfully\n");
-        std::cout << std::format("Output file: {}\n", output_file_.string());
+        // Pull filtered frames
+        while (true) {
+          const auto filter_ret =
+              av_buffersink_get_frame(buffersink_ctx_, filtered_frame_.get());
+
+          if (filter_ret == AVERROR(EAGAIN) || filter_ret == AVERROR_EOF) {
+            break;
+          }
+
+          if (filter_ret < 0) {
+            std::cerr << "Error getting filtered frame\n";
+            break;
+          }
+
+          ffmpeg::ScopedFrameUnref filtered_guard(filtered_frame_.get());
+
+          // Write filtered audio
+          total_data_size += write_frame(output_stream);
+          ++frame_count;
+
+          if (frame_count % 100 == 0) {
+            std::cout << std::format("Processed {} frames\r", frame_count)
+                      << std::flush;
+          }
+        }
+      }
     }
+
+    std::cout << std::format("\nTotal frames processed: {}\n", frame_count);
+    std::cout << std::format("Output data size: {} bytes\n", total_data_size);
+
+    // Update WAV header
+    output_stream.seekp(0, std::ios::beg);
+    write_wav_header(output_stream, out_sample_rate_, out_channels_,
+                     total_data_size);
+
+    std::cout << std::format("\n✓ Equalization completed successfully\n");
+    std::cout << std::format("Output file: {}\n", output_file_.string());
+  }
 
 private:
-    void initialize() {
-        // Find audio stream
-        const auto stream_idx = ffmpeg::find_stream_index(format_ctx_.get(), AVMEDIA_TYPE_AUDIO);
-        if (!stream_idx) {
-            throw ffmpeg::FFmpegError("No audio stream found");
-        }
-        audio_stream_index_ = *stream_idx;
+  void initialize() {
+    // Find audio stream
+    const auto stream_idx =
+        ffmpeg::find_stream_index(format_ctx_.get(), AVMEDIA_TYPE_AUDIO);
+    if (!stream_idx) {
+      throw ffmpeg::FFmpegError("No audio stream found");
+    }
+    audio_stream_index_ = *stream_idx;
 
-        // Open decoder
-        const auto* codecpar = format_ctx_->streams[audio_stream_index_]->codecpar;
-        const auto* decoder = avcodec_find_decoder(codecpar->codec_id);
-        if (!decoder) {
-            throw ffmpeg::FFmpegError("Decoder not found");
-        }
-
-        codec_ctx_ = ffmpeg::create_codec_context(decoder);
-        ffmpeg::check_error(
-            avcodec_parameters_to_context(codec_ctx_.get(), codecpar),
-            "copy decoder parameters"
-        );
-        ffmpeg::check_error(
-            avcodec_open2(codec_ctx_.get(), decoder, nullptr),
-            "open decoder"
-        );
-
-        // Initialize filter graph
-        initialize_filter();
-
-        // Setup output parameters
-        out_sample_rate_ = codec_ctx_->sample_rate;
-        out_channels_ = codec_ctx_->ch_layout.nb_channels;
-
-        // Setup resampler to convert to S16 for WAV output
-        AVChannelLayout out_ch_layout;
-        av_channel_layout_default(&out_ch_layout, out_channels_);
-
-        ffmpeg::check_error(
-            swr_alloc_set_opts2(&swr_ctx_raw_,
-                              &out_ch_layout,
-                              AV_SAMPLE_FMT_S16,
-                              out_sample_rate_,
-                              &codec_ctx_->ch_layout,
-                              codec_ctx_->sample_fmt,
-                              codec_ctx_->sample_rate,
-                              0, nullptr),
-            "allocate resampler"
-        );
-
-        swr_ctx_.reset(swr_ctx_raw_);
-        swr_ctx_raw_ = nullptr;
-
-        ffmpeg::check_error(
-            swr_init(swr_ctx_.get()),
-            "initialize resampler"
-        );
-
-        // Allocate output buffer
-        max_dst_nb_samples_ = av_rescale_rnd(4096, out_sample_rate_,
-                                            codec_ctx_->sample_rate, AV_ROUND_UP);
-
-        ffmpeg::check_error(
-            av_samples_alloc_array_and_samples(&dst_data_, &dst_linesize_, out_channels_,
-                                              max_dst_nb_samples_, AV_SAMPLE_FMT_S16, 0),
-            "allocate sample buffer"
-        );
+    // Open decoder
+    const auto *codecpar = format_ctx_->streams[audio_stream_index_]->codecpar;
+    const auto *decoder = avcodec_find_decoder(codecpar->codec_id);
+    if (!decoder) {
+      throw ffmpeg::FFmpegError("Decoder not found");
     }
 
-    void initialize_filter() {
-        const auto* abuffersrc = avfilter_get_by_name("abuffer");
-        const auto* abuffersink = avfilter_get_by_name("abuffersink");
+    codec_ctx_ = ffmpeg::create_codec_context(decoder);
+    ffmpeg::check_error(
+        avcodec_parameters_to_context(codec_ctx_.get(), codecpar),
+        "copy decoder parameters");
+    ffmpeg::check_error(avcodec_open2(codec_ctx_.get(), decoder, nullptr),
+                        "open decoder");
 
-        filter_graph_.reset(avfilter_graph_alloc());
-        if (!filter_graph_) {
-            throw ffmpeg::FFmpegError("Failed to allocate filter graph");
-        }
+    // Initialize filter graph
+    initialize_filter();
 
-        // Create buffer source
-        char ch_layout[64];
-        av_channel_layout_describe(&codec_ctx_->ch_layout, ch_layout, sizeof(ch_layout));
+    // Setup output parameters
+    out_sample_rate_ = codec_ctx_->sample_rate;
+    out_channels_ = codec_ctx_->ch_layout.nb_channels;
 
-        const auto args = std::format(
-            "sample_rate={}:sample_fmt={}:channel_layout={}:time_base={}/{}",
-            codec_ctx_->sample_rate,
-            av_get_sample_fmt_name(codec_ctx_->sample_fmt),
-            ch_layout,
-            1, codec_ctx_->sample_rate
-        );
+    // Setup resampler to convert to S16 for WAV output
+    AVChannelLayout out_ch_layout;
+    av_channel_layout_default(&out_ch_layout, out_channels_);
 
-        ffmpeg::check_error(
-            avfilter_graph_create_filter(&buffersrc_ctx_, abuffersrc, "in",
-                                        args.c_str(), nullptr, filter_graph_.get()),
-            "create buffer source"
-        );
+    ffmpeg::check_error(
+        swr_alloc_set_opts2(&swr_ctx_raw_, &out_ch_layout, AV_SAMPLE_FMT_S16,
+                            out_sample_rate_, &codec_ctx_->ch_layout,
+                            codec_ctx_->sample_fmt, codec_ctx_->sample_rate, 0,
+                            nullptr),
+        "allocate resampler");
 
-        // Create buffer sink
-        ffmpeg::check_error(
-            avfilter_graph_create_filter(&buffersink_ctx_, abuffersink, "out",
-                                        nullptr, nullptr, filter_graph_.get()),
-            "create buffer sink"
-        );
+    swr_ctx_.reset(swr_ctx_raw_);
+    swr_ctx_raw_ = nullptr;
 
-        // Set up filter graph endpoints
-        AVFilterInOut* outputs = avfilter_inout_alloc();
-        AVFilterInOut* inputs = avfilter_inout_alloc();
+    ffmpeg::check_error(swr_init(swr_ctx_.get()), "initialize resampler");
 
-        if (!outputs || !inputs) {
-            avfilter_inout_free(&inputs);
-            avfilter_inout_free(&outputs);
-            throw ffmpeg::FFmpegError("Failed to allocate filter I/O");
-        }
+    // Allocate output buffer
+    max_dst_nb_samples_ = av_rescale_rnd(4096, out_sample_rate_,
+                                         codec_ctx_->sample_rate, AV_ROUND_UP);
 
-        outputs->name = av_strdup("in");
-        outputs->filter_ctx = buffersrc_ctx_;
-        outputs->pad_idx = 0;
-        outputs->next = nullptr;
+    ffmpeg::check_error(av_samples_alloc_array_and_samples(
+                            &dst_data_, &dst_linesize_, out_channels_,
+                            max_dst_nb_samples_, AV_SAMPLE_FMT_S16, 0),
+                        "allocate sample buffer");
+  }
 
-        inputs->name = av_strdup("out");
-        inputs->filter_ctx = buffersink_ctx_;
-        inputs->pad_idx = 0;
-        inputs->next = nullptr;
+  void initialize_filter() {
+    const auto *abuffersrc = avfilter_get_by_name("abuffer");
+    const auto *abuffersink = avfilter_get_by_name("abuffersink");
 
-        // Parse filter description
-        const auto ret = avfilter_graph_parse_ptr(filter_graph_.get(), filter_description_.c_str(),
-                                                 &inputs, &outputs, nullptr);
-        avfilter_inout_free(&inputs);
-        avfilter_inout_free(&outputs);
-
-        ffmpeg::check_error(ret, "parse filter graph");
-
-        // Configure filter graph
-        ffmpeg::check_error(
-            avfilter_graph_config(filter_graph_.get(), nullptr),
-            "configure filter graph"
-        );
+    filter_graph_.reset(avfilter_graph_alloc());
+    if (!filter_graph_) {
+      throw ffmpeg::FFmpegError("Failed to allocate filter graph");
     }
 
-    uint32_t write_frame(std::ofstream& output_stream) {
-        const auto dst_nb_samples = av_rescale_rnd(
-            swr_get_delay(swr_ctx_.get(), codec_ctx_->sample_rate) + filtered_frame_->nb_samples,
-            out_sample_rate_, codec_ctx_->sample_rate, AV_ROUND_UP);
+    // Create buffer source
+    char ch_layout[64];
+    av_channel_layout_describe(&codec_ctx_->ch_layout, ch_layout,
+                               sizeof(ch_layout));
 
-        if (dst_nb_samples > max_dst_nb_samples_) {
-            av_freep(&dst_data_[0]);
-            av_samples_alloc(dst_data_, &dst_linesize_, out_channels_,
-                           dst_nb_samples, AV_SAMPLE_FMT_S16, 1);
-            max_dst_nb_samples_ = dst_nb_samples;
-        }
+    const auto args = std::format(
+        "sample_rate={}:sample_fmt={}:channel_layout={}:time_base={}/{}",
+        codec_ctx_->sample_rate, av_get_sample_fmt_name(codec_ctx_->sample_fmt),
+        ch_layout, 1, codec_ctx_->sample_rate);
 
-        const auto ret = swr_convert(swr_ctx_.get(), dst_data_, dst_nb_samples,
-                                    const_cast<const uint8_t**>(filtered_frame_->data),
-                                    filtered_frame_->nb_samples);
+    ffmpeg::check_error(avfilter_graph_create_filter(
+                            &buffersrc_ctx_, abuffersrc, "in", args.c_str(),
+                            nullptr, filter_graph_.get()),
+                        "create buffer source");
 
-        if (ret <= 0) {
-            return 0;
-        }
+    // Create buffer sink
+    ffmpeg::check_error(
+        avfilter_graph_create_filter(&buffersink_ctx_, abuffersink, "out",
+                                     nullptr, nullptr, filter_graph_.get()),
+        "create buffer sink");
 
-        const auto dst_bufsize = av_samples_get_buffer_size(&dst_linesize_, out_channels_,
-                                                           ret, AV_SAMPLE_FMT_S16, 1);
-        output_stream.write(reinterpret_cast<char*>(dst_data_[0]), dst_bufsize);
+    // Set up filter graph endpoints
+    AVFilterInOut *outputs = avfilter_inout_alloc();
+    AVFilterInOut *inputs = avfilter_inout_alloc();
 
-        return static_cast<uint32_t>(dst_bufsize);
+    if (!outputs || !inputs) {
+      avfilter_inout_free(&inputs);
+      avfilter_inout_free(&outputs);
+      throw ffmpeg::FFmpegError("Failed to allocate filter I/O");
     }
 
-    ~AudioEqualizer() {
-        if (dst_data_) {
-            av_freep(&dst_data_[0]);
-            av_freep(&dst_data_);
-        }
+    outputs->name = av_strdup("in");
+    outputs->filter_ctx = buffersrc_ctx_;
+    outputs->pad_idx = 0;
+    outputs->next = nullptr;
+
+    inputs->name = av_strdup("out");
+    inputs->filter_ctx = buffersink_ctx_;
+    inputs->pad_idx = 0;
+    inputs->next = nullptr;
+
+    // Parse filter description
+    const auto ret = avfilter_graph_parse_ptr(filter_graph_.get(),
+                                              filter_description_.c_str(),
+                                              &inputs, &outputs, nullptr);
+    avfilter_inout_free(&inputs);
+    avfilter_inout_free(&outputs);
+
+    ffmpeg::check_error(ret, "parse filter graph");
+
+    // Configure filter graph
+    ffmpeg::check_error(avfilter_graph_config(filter_graph_.get(), nullptr),
+                        "configure filter graph");
+  }
+
+  uint32_t write_frame(std::ofstream &output_stream) {
+    const auto dst_nb_samples =
+        av_rescale_rnd(swr_get_delay(swr_ctx_.get(), codec_ctx_->sample_rate) +
+                           filtered_frame_->nb_samples,
+                       out_sample_rate_, codec_ctx_->sample_rate, AV_ROUND_UP);
+
+    if (dst_nb_samples > max_dst_nb_samples_) {
+      av_freep(&dst_data_[0]);
+      av_samples_alloc(dst_data_, &dst_linesize_, out_channels_, dst_nb_samples,
+                       AV_SAMPLE_FMT_S16, 1);
+      max_dst_nb_samples_ = dst_nb_samples;
     }
 
-    fs::path output_file_;
-    std::string filter_description_;
-    int audio_stream_index_ = -1;
-    int out_sample_rate_ = 44100;
-    int out_channels_ = 2;
-    int max_dst_nb_samples_ = 0;
-    int dst_linesize_ = 0;
-    uint8_t** dst_data_ = nullptr;
+    const auto ret =
+        swr_convert(swr_ctx_.get(), dst_data_, dst_nb_samples,
+                    const_cast<const uint8_t **>(filtered_frame_->data),
+                    filtered_frame_->nb_samples);
 
-    ffmpeg::FormatContextPtr format_ctx_;
-    ffmpeg::CodecContextPtr codec_ctx_;
-    ffmpeg::FilterGraphPtr filter_graph_;
-    ffmpeg::PacketPtr packet_;
-    ffmpeg::FramePtr frame_;
-    ffmpeg::FramePtr filtered_frame_;
-    ffmpeg::SwrContextPtr swr_ctx_;
-    SwrContext* swr_ctx_raw_ = nullptr;
+    if (ret <= 0) {
+      return 0;
+    }
 
-    AVFilterContext* buffersrc_ctx_ = nullptr;
-    AVFilterContext* buffersink_ctx_ = nullptr;
+    const auto dst_bufsize = av_samples_get_buffer_size(
+        &dst_linesize_, out_channels_, ret, AV_SAMPLE_FMT_S16, 1);
+    output_stream.write(reinterpret_cast<char *>(dst_data_[0]), dst_bufsize);
+
+    return static_cast<uint32_t>(dst_bufsize);
+  }
+
+  fs::path output_file_;
+  std::string filter_description_;
+  int audio_stream_index_ = -1;
+  int out_sample_rate_ = 44100;
+  int out_channels_ = 2;
+  int max_dst_nb_samples_ = 0;
+  int dst_linesize_ = 0;
+  uint8_t **dst_data_ = nullptr;
+
+  ffmpeg::FormatContextPtr format_ctx_;
+  ffmpeg::CodecContextPtr codec_ctx_;
+  ffmpeg::FilterGraphPtr filter_graph_;
+  ffmpeg::PacketPtr packet_;
+  ffmpeg::FramePtr frame_;
+  ffmpeg::FramePtr filtered_frame_;
+  ffmpeg::SwrContextPtr swr_ctx_;
+  SwrContext *swr_ctx_raw_ = nullptr;
+
+  AVFilterContext *buffersrc_ctx_ = nullptr;
+  AVFilterContext *buffersink_ctx_ = nullptr;
 };
 
 void print_usage(std::string_view prog_name) {
-    std::cout << std::format("Usage: {} <input_file> <output_file> <mode> [options]\n\n", prog_name);
-    std::cout << "Modes:\n\n";
-    std::cout << "  preset <preset_name>\n";
-    std::cout << "      Use a predefined equalizer preset\n\n";
-    std::cout << "  custom <freq1>,<gain1>,<width1> <freq2>,<gain2>,<width2> ...\n";
-    std::cout << "      Create custom equalizer with specific bands\n\n";
-    std::cout << "Available Presets:\n";
-    std::cout << "  flat         - No equalization (bypass)\n";
-    std::cout << "  bass_boost   - Enhanced bass frequencies\n";
-    std::cout << "  treble_boost - Enhanced treble frequencies\n";
-    std::cout << "  vocal        - Optimized for vocals\n";
-    std::cout << "  classical    - Classical music\n";
-    std::cout << "  rock         - Rock music\n";
-    std::cout << "  jazz         - Jazz music\n";
-    std::cout << "  pop          - Pop music\n";
-    std::cout << "  electronic   - Electronic/EDM music\n";
-    std::cout << "  acoustic     - Acoustic instruments\n\n";
-    std::cout << "Examples:\n";
-    std::cout << std::format("  {} input.mp3 output.wav preset bass_boost\n", prog_name);
-    std::cout << std::format("  {} music.flac enhanced.wav preset vocal\n", prog_name);
-    std::cout << std::format("  {} audio.wav custom.wav custom 100,5,2 1000,3,2 5000,-2,2\n", prog_name);
-    std::cout << "\nCustom band format: frequency(Hz),gain(dB),width(octaves)\n";
+  std::cout << std::format(
+      "Usage: {} <input_file> <output_file> <mode> [options]\n\n", prog_name);
+  std::cout << "Modes:\n\n";
+  std::cout << "  preset <preset_name>\n";
+  std::cout << "      Use a predefined equalizer preset\n\n";
+  std::cout
+      << "  custom <freq1>,<gain1>,<width1> <freq2>,<gain2>,<width2> ...\n";
+  std::cout << "      Create custom equalizer with specific bands\n\n";
+  std::cout << "Available Presets:\n";
+  std::cout << "  flat         - No equalization (bypass)\n";
+  std::cout << "  bass_boost   - Enhanced bass frequencies\n";
+  std::cout << "  treble_boost - Enhanced treble frequencies\n";
+  std::cout << "  vocal        - Optimized for vocals\n";
+  std::cout << "  classical    - Classical music\n";
+  std::cout << "  rock         - Rock music\n";
+  std::cout << "  jazz         - Jazz music\n";
+  std::cout << "  pop          - Pop music\n";
+  std::cout << "  electronic   - Electronic/EDM music\n";
+  std::cout << "  acoustic     - Acoustic instruments\n\n";
+  std::cout << "Examples:\n";
+  std::cout << std::format("  {} input.mp3 output.wav preset bass_boost\n",
+                           prog_name);
+  std::cout << std::format("  {} music.flac enhanced.wav preset vocal\n",
+                           prog_name);
+  std::cout << std::format(
+      "  {} audio.wav custom.wav custom 100,5,2 1000,3,2 5000,-2,2\n",
+      prog_name);
+  std::cout << "\nCustom band format: frequency(Hz),gain(dB),width(octaves)\n";
 }
 
 } // anonymous namespace
 
-int main(int argc, char* argv[]) {
-    if (argc < 5) {
-        print_usage(argv[0]);
+int main(int argc, char *argv[]) {
+  if (argc < 5) {
+    print_usage(argv[0]);
+    return 1;
+  }
+
+  try {
+    const std::string_view input_file{argv[1]};
+    const fs::path output_file{argv[2]};
+    const std::string_view mode{argv[3]};
+
+    std::string filter_description;
+
+    if (mode == "preset") {
+      const std::string_view preset_name{argv[4]};
+      filter_description = get_equalizer_preset(preset_name);
+
+    } else if (mode == "custom") {
+      if (argc < 5) {
+        std::cerr << "Error: custom mode requires band specifications\n";
         return 1;
-    }
+      }
 
-    try {
-        const std::string_view input_file{argv[1]};
-        const fs::path output_file{argv[2]};
-        const std::string_view mode{argv[3]};
+      std::vector<EqualizerBand> bands;
 
-        std::string filter_description;
+      for (int i = 4; i < argc; ++i) {
+        std::string band_spec{argv[i]};
 
-        if (mode == "preset") {
-            const std::string_view preset_name{argv[4]};
-            filter_description = get_equalizer_preset(preset_name);
+        // Parse freq,gain,width
+        size_t pos1 = band_spec.find(',');
+        size_t pos2 = band_spec.find(',', pos1 + 1);
 
-        } else if (mode == "custom") {
-            if (argc < 5) {
-                std::cerr << "Error: custom mode requires band specifications\n";
-                return 1;
-            }
-
-            std::vector<EqualizerBand> bands;
-
-            for (int i = 4; i < argc; ++i) {
-                std::string band_spec{argv[i]};
-
-                // Parse freq,gain,width
-                size_t pos1 = band_spec.find(',');
-                size_t pos2 = band_spec.find(',', pos1 + 1);
-
-                if (pos1 == std::string::npos || pos2 == std::string::npos) {
-                    std::cerr << std::format("Error: Invalid band specification: {}\n", band_spec);
-                    return 1;
-                }
-
-                EqualizerBand band;
-                band.frequency = std::stoi(band_spec.substr(0, pos1));
-                band.gain_db = std::stof(band_spec.substr(pos1 + 1, pos2 - pos1 - 1));
-                band.width = std::stoi(band_spec.substr(pos2 + 1));
-
-                bands.push_back(band);
-            }
-
-            filter_description = build_custom_equalizer(bands);
-
-        } else {
-            std::cerr << std::format("Error: Unknown mode '{}'\n", mode);
-            print_usage(argv[0]);
-            return 1;
+        if (pos1 == std::string::npos || pos2 == std::string::npos) {
+          std::cerr << std::format("Error: Invalid band specification: {}\n",
+                                   band_spec);
+          return 1;
         }
 
-        AudioEqualizer equalizer(input_file, output_file, filter_description);
-        equalizer.process();
+        EqualizerBand band;
+        band.frequency = std::stoi(band_spec.substr(0, pos1));
+        band.gain_db = std::stof(band_spec.substr(pos1 + 1, pos2 - pos1 - 1));
+        band.width = std::stoi(band_spec.substr(pos2 + 1));
 
-    } catch (const ffmpeg::FFmpegError& e) {
-        std::cerr << std::format("FFmpeg error: {}\n", e.what());
-        return 1;
-    } catch (const std::exception& e) {
-        std::cerr << std::format("Error: {}\n", e.what());
-        return 1;
+        bands.push_back(band);
+      }
+
+      filter_description = build_custom_equalizer(bands);
+
+    } else {
+      std::cerr << std::format("Error: Unknown mode '{}'\n", mode);
+      print_usage(argv[0]);
+      return 1;
     }
 
-    return 0;
+    AudioEqualizer equalizer(input_file, output_file, filter_description);
+    equalizer.process();
+
+  } catch (const ffmpeg::FFmpegError &e) {
+    std::cerr << std::format("FFmpeg error: {}\n", e.what());
+    return 1;
+  } catch (const std::exception &e) {
+    std::cerr << std::format("Error: {}\n", e.what());
+    return 1;
+  }
+
+  return 0;
 }
