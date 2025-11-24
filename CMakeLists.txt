@@ -15,6 +15,7 @@ pkg_check_modules(FFMPEG REQUIRED
     libavfilter
     libswscale
     libswresample
+    libavdevice
 )
 
 # Include directories
