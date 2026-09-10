@@ -1,3 +1,5 @@
+> Status: archived 2026-09. No further maintenance; kept for reference.
+
 # FFmpeg Multimedia Processing Samples
 
 A comprehensive collection of **52 modern C++20 sample applications** demonstrating video and audio processing using the FFmpeg library. Perfect for beginners and professionals alike!
